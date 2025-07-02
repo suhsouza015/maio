@@ -44,4 +44,5 @@ if uploaded_file is not None:
         resultado = df_filtrado[df_filtrado["Preço à vista"] == preco_selecionado]
 
         st.markdown("### 📄 Resultado do Filtro")
-        st.dataframe(resultado, use_container_widt)
+        st.dataframe(resultado, use_container_width=True)
+
