@@ -169,7 +169,7 @@ col_numericas = df_editado.select_dtypes(include="number").columns.tolist()
 col_categoricas = df_editado.select_dtypes(include=["object", "category"]).columns.tolist()
 col_datas = df_editado.select_dtypes(include=["datetime64[ns]"]).columns.tolist()
 
-# --- NOVO FILTRO GLOBAL DE PALAVRA-CHAVE PARA AS OPERAÇÕES ---
+# --- FILTRO GLOBAL DE PALAVRA-CHAVE PARA AS OPERAÇÕES ---
 st.markdown("##### Aplicar filtro de palavra-chave nas operações:")
 keyword_filter_op = st.text_input("Filtrar por palavra-chave (em qualquer coluna) antes de aplicar operações:", key="keyword_op_filter")
 if keyword_filter_op:
@@ -216,9 +216,12 @@ for i in range(int(num_ops)):
     st.markdown(f"---")
     st.write(f"**Operação {i+1}**")
     col = st.selectbox("Coluna Numérica", ["(nenhuma)"] + col_numericas, key=f"colop{i}")
-    tipo = st.selectbox("Tipo", ["Soma", "Subtração", "Multiplicação", "Divisão", "Porcentagem"], key=f"tipoop{i}")
+    
+    # MODIFICAÇÃO AQUI: Adiciona a opção de aumentar/diminuir porcentagem
+    tipo_operacao = st.selectbox("Tipo", ["Soma", "Subtração", "Multiplicação", "Divisão", "Aumentar Porcentagem", "Diminuir Porcentagem"], key=f"tipoop{i}")
+    
     val = st.number_input("Valor", format="%.2f", key=f"valop{i}")
-    regras.append({"col": col, "tipo": tipo, "val": val})
+    regras.append({"col": col, "tipo": tipo_operacao, "val": val}) # Usa tipo_operacao
 
 if st.button("⚡ Aplicar operações"):
     df_temp = df_editado.copy()
@@ -243,10 +246,10 @@ if st.button("⚡ Aplicar operações"):
                               (df_temp[coluna_filtro_op].dt.date <= valores_filtro_op['end'])
         elif valores_filtro_op:
             mask_col_filter = df_temp[coluna_filtro_op].isin(valores_filtro_op)
-        else: # Se a coluna foi selecionada, mas não há valores no filtro (ex: multiselect vazio)
-            mask_col_filter = pd.Series([False] * len(df_temp), index=df_temp.index) # Nenhuma linha selecionada
+        else:
+            mask_col_filter = pd.Series([False] * len(df_temp), index=df_temp.index)
         
-        filtro_global_operacao = filtro_global_operacao & mask_col_filter # Combina com o filtro de palavra-chave
+        filtro_global_operacao = filtro_global_operacao & mask_col_filter
 
     if filtro_global_operacao.empty or not filtro_global_operacao.any():
         st.warning("A combinação de filtros selecionada não retornou nenhuma linha. Nenhuma operação será aplicada.")
@@ -256,7 +259,6 @@ if st.button("⚡ Aplicar operações"):
         col, tipo, val = r.values()
         try:
             if col != "(nenhuma)":
-                # Aplica a operação apenas nas linhas que satisfazem o filtro global combinado
                 df_temp.loc[filtro_global_operacao, col] = pd.to_numeric(df_temp.loc[filtro_global_operacao, col], errors='coerce')
                 
                 if tipo == "Soma":
@@ -267,8 +269,11 @@ if st.button("⚡ Aplicar operações"):
                     df_temp.loc[filtro_global_operacao, col] *= val
                 elif tipo == "Divisão" and val != 0:
                     df_temp.loc[filtro_global_operacao, col] /= val
-                elif tipo == "Porcentagem":
+                # LÓGICA DE AUMENTAR/DIMINUIR PORCENTAGEM
+                elif tipo == "Aumentar Porcentagem":
                     df_temp.loc[filtro_global_operacao, col] *= (1 + val / 100)
+                elif tipo == "Diminuir Porcentagem":
+                    df_temp.loc[filtro_global_operacao, col] *= (1 - val / 100)
 
                 if filtro_global_operacao.any():
                     celulas_modificadas.loc[df_temp.index[filtro_global_operacao], col] = True
@@ -300,7 +305,7 @@ st.subheader("🔍 Filtros de Visualização")
 
 df_para_visualizacao_final = df_editado.copy()
 
-# O filtro de palavra-chave principal original volta para esta seção
+# O filtro de palavra-chave principal permanece aqui
 keyword_filter = st.text_input("Filtrar por palavra-chave (em qualquer coluna) para visualização:", key="keyword_main_filter")
 if keyword_filter:
     df_str = df_para_visualizacao_final.astype(str)
