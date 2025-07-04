@@ -15,6 +15,27 @@ if "selecao_grafico" not in st.session_state:
     st.session_state.selecao_grafico = {}
 if "nome_arquivo_upload" not in st.session_state:
     st.session_state.nome_arquivo_upload = None
+if "historico_df" not in st.session_state: # NOVO: Histórico para desfazer operações
+    st.session_state.historico_df = []
+if "historico_celulas_modificadas" not in st.session_state: # NOVO: Histórico para celulas_modificadas
+    st.session_state.historico_celulas_modificadas = []
+
+def salvar_estado(): # Função para salvar o estado atual
+    st.session_state.historico_df.append(st.session_state.df_editado.copy())
+    st.session_state.historico_celulas_modificadas.append(st.session_state.celulas_modificadas.copy())
+    # Limita o histórico para não consumir muita memória (e.g., últimas 5 ações)
+    if len(st.session_state.historico_df) > 5:
+        st.session_state.historico_df.pop(0)
+        st.session_state.historico_celulas_modificadas.pop(0)
+
+def restaurar_ultimo_estado(): # Função para restaurar o último estado
+    if st.session_state.historico_df:
+        st.session_state.df_editado = st.session_state.historico_df.pop()
+        st.session_state.celulas_modificadas = st.session_state.historico_celulas_modificadas.pop()
+        st.success("Última alteração desfeita!")
+        st.rerun()
+    else:
+        st.warning("Não há ações para desfazer.")
 
 # --- 2. Upload ou Criação de Planilha ---
 st.sidebar.header("📥 Upload ou Criação")
@@ -23,6 +44,7 @@ arquivo = st.sidebar.file_uploader("Envie um .xlsx ou .csv", type=["xlsx", "csv"
 if arquivo is not None:
     if st.session_state.nome_arquivo_upload != arquivo.name:
         try:
+            salvar_estado() # Salva estado antes de carregar novo arquivo
             if arquivo.name.endswith('.xlsx'):
                 df_carregado = pd.read_excel(arquivo)
             elif arquivo.name.endswith('.csv'):
@@ -36,13 +58,19 @@ if arquivo is not None:
             st.rerun()
         except Exception as e:
             st.error(f"Erro ao ler o arquivo: {e}. Certifique-se de que é um arquivo Excel/CSV válido.")
-            st.session_state.df_editado = pd.DataFrame([["" for _ in range(3)] for _ in range(5)], columns=["Coluna 1", "Coluna 2", "Coluna 3"])
-            st.session_state.celulas_modificadas = pd.DataFrame(False, index=st.session_state.df_editado.index, columns=st.session_state.df_editado.columns)
+            # Restaura o estado se houver erro no carregamento
+            if st.session_state.historico_df:
+                st.session_state.df_editado = st.session_state.historico_df[-1]
+                st.session_state.celulas_modificadas = st.session_state.historico_celulas_modificadas[-1]
+            else: # Se não houver histórico, cria um DataFrame vazio ou padrão
+                st.session_state.df_editado = pd.DataFrame([["" for _ in range(3)] for _ in range(5)], columns=["Coluna 1", "Coluna 2", "Coluna 3"])
+                st.session_state.celulas_modificadas = pd.DataFrame(False, index=st.session_state.df_editado.index, columns=st.session_state.df_editado.columns)
             st.session_state.selecao_grafico = {}
             st.session_state.nome_arquivo_upload = None
             st.rerun()
 
 if "df_editado" not in st.session_state or st.sidebar.button("Criar nova planilha", key="create_new_df_btn"):
+    salvar_estado() # Salva estado antes de criar nova planilha
     st.sidebar.header("🧩 Criar nova planilha")
     linhas = st.sidebar.number_input("Linhas", 1, 100, 5, key="new_rows")
     colunas = st.sidebar.number_input("Colunas", 1, 20, 3, key="new_cols")
@@ -60,6 +88,7 @@ celulas_modificadas = st.session_state.celulas_modificadas
 # --- 3. Limpeza de Dados Básica ---
 st.sidebar.header("🧹 Limpeza de Dados")
 if st.sidebar.button("Remover Linhas Duplicadas"):
+    salvar_estado() # Salva estado antes da operação
     linhas_antes = len(df_editado)
     df_editado.drop_duplicates(inplace=True)
     st.session_state.df_editado = df_editado
@@ -78,6 +107,7 @@ if colunas_para_converter != "(nenhuma)":
     )
     if tipo_alvo != "(selecione)":
         if st.sidebar.button("Aplicar Conversão"):
+            salvar_estado() # Salva estado antes da operação
             try:
                 if tipo_alvo == "Número (Inteiro)":
                     df_editado[colunas_para_converter] = pd.to_numeric(df_editado[colunas_para_converter], errors='coerce').astype(pd.Int64Dtype())
@@ -108,6 +138,7 @@ if preencher_nan_opcao != "Não":
         if preencher_nan_opcao == "Com valor específico":
             valor_para_preencher = st.sidebar.text_input(f"Valor para preencher NaN em '{coluna_para_preencher}'")
             if st.sidebar.button(f"Aplicar preenchimento '{coluna_para_preencher}'"):
+                salvar_estado() # Salva estado antes da operação
                 df_editado[coluna_para_preencher].fillna(valor_para_preencher, inplace=True)
                 st.session_state.df_editado = df_editado
                 st.sidebar.success(f"NaNs preenchidos em '{coluna_para_preencher}' com '{valor_para_preencher}'.")
@@ -120,6 +151,7 @@ if preencher_nan_opcao != "Não":
                     valor_calc = df_editado[coluna_para_preencher].median()
                 
                 if st.sidebar.button(f"Aplicar preenchimento '{coluna_para_preencher}' com {preencher_nan_opcao.split(' ')[1]}"):
+                    salvar_estado() # Salva estado antes da operação
                     df_editado[coluna_para_preencher].fillna(valor_calc, inplace=True)
                     st.session_state.df_editado = df_editado
                     st.sidebar.success(f"NaNs preenchidos em '{coluna_para_preencher}' com {valor_calc:.2f} ({preencher_nan_opcao.split(' ')[1]}).")
@@ -142,6 +174,7 @@ if coluna_antiga != "(nenhuma)":
             if nova_nome_coluna in df_editado.columns:
                 st.sidebar.warning(f"O nome '{nova_nome_coluna}' já existe. Por favor, escolha um nome diferente.")
             else:
+                salvar_estado() # Salva estado antes da operação
                 df_editado.rename(columns={coluna_antiga: nova_nome_coluna}, inplace=True)
                 if coluna_antiga in celulas_modificadas.columns:
                     celulas_modificadas.rename(columns={coluna_antiga: nova_nome_coluna}, inplace=True)
@@ -152,17 +185,61 @@ if coluna_antiga != "(nenhuma)":
         else:
             st.sidebar.info("O novo nome não pode ser vazio ou igual ao nome atual.")
 
+# --- 5. Remover Colunas ---
+st.sidebar.header("🗑️ Remover Colunas")
+colunas_para_remover = st.sidebar.multiselect(
+    "Selecionar colunas para remover",
+    df_editado.columns.tolist(),
+    key="cols_to_drop"
+)
+if st.sidebar.button("Remover Colunas Selecionadas"):
+    if colunas_para_remover:
+        salvar_estado() # Salva estado antes da operação de remoção
+        colunas_removidas_str = ", ".join(colunas_para_remover)
+        df_editado.drop(columns=colunas_para_remover, inplace=True)
+        
+        for col_to_remove in colunas_para_remover:
+            if col_to_remove in celulas_modificadas.columns:
+                celulas_modificadas = celulas_modificadas.drop(columns=[col_to_remove])
+        
+        st.session_state.df_editado = df_editado
+        st.session_state.celulas_modificadas = celulas_modificadas
+        st.sidebar.success(f"Colunas '{colunas_removidas_str}' removidas com sucesso!")
+        st.rerun()
+    else:
+        st.sidebar.info("Nenhuma coluna selecionada para remover.")
 
-# --- 5. Editor de Dados Principal ---
+# NOVO: Botão para desfazer última remoção (ou qualquer ação)
+st.sidebar.markdown("---")
+st.sidebar.subheader("↩️ Desfazer Ação")
+if st.sidebar.button("Desfazer Última Alteração"):
+    restaurar_ultimo_estado()
+
+
+# --- 6. Editor de Dados Principal ---
 st.subheader("📝 Editar Dados")
-df_editado = st.data_editor(df_editado, num_rows="dynamic", use_container_width=True, key="main_data_editor")
-st.session_state.df_editado = df_editado
+# Salva o estado ANTES da edição manual (o data_editor não tem "on_change" direto para salvar)
+# Então, vamos monitorar se o DataFrame mudou após a interação do data_editor
+df_antes_edicao = st.session_state.df_editado.copy() 
+df_editado_novo = st.data_editor(df_editado, num_rows="dynamic", use_container_width=True, key="main_data_editor")
 
-# --- 6. Seleção de Colunas Visíveis ---
+if not df_antes_edicao.equals(df_editado_novo):
+    salvar_estado() # Salva o estado se o usuário fez alterações manuais
+    st.session_state.df_editado = df_editado_novo
+    # Para o celulas_modificadas no data_editor, precisaríamos de uma lógica mais complexa
+    # que identificasse as células alteradas, o que está fora do escopo atual.
+    # Por enquanto, apenas o df_editado é salvo no histórico.
+    st.rerun() # Rerun para atualizar o estado e aplicar estilos, se necessário
+
+df_editado = st.session_state.df_editado # Garante que df_editado reflita o estado atual
+celulas_modificadas = st.session_state.celulas_modificadas
+
+
+# --- 7. Seleção de Colunas Visíveis ---
 st.subheader("👁️ Colunas Visíveis")
 colunas_visiveis = st.multiselect("Selecionar colunas para exibição", df_editado.columns.tolist(), default=df_editado.columns.tolist())
 
-# --- 7. Regras de Operação com Filtro Específico ---
+# --- 8. Regras de Operação com Filtro Específico ---
 st.subheader("🧮 Regras de Operação com Filtro Específico")
 # Atualiza as listas de colunas após possíveis conversões de tipo
 col_numericas = df_editado.select_dtypes(include="number").columns.tolist()
@@ -217,25 +294,22 @@ for i in range(int(num_ops)):
     st.write(f"**Operação {i+1}**")
     col = st.selectbox("Coluna Numérica", ["(nenhuma)"] + col_numericas, key=f"colop{i}")
     
-    # MODIFICAÇÃO AQUI: Adiciona a opção de aumentar/diminuir porcentagem
     tipo_operacao = st.selectbox("Tipo", ["Soma", "Subtração", "Multiplicação", "Divisão", "Aumentar Porcentagem", "Diminuir Porcentagem"], key=f"tipoop{i}")
     
     val = st.number_input("Valor", format="%.2f", key=f"valop{i}")
-    regras.append({"col": col, "tipo": tipo_operacao, "val": val}) # Usa tipo_operacao
+    regras.append({"col": col, "tipo": tipo_operacao, "val": val})
 
 if st.button("⚡ Aplicar operações"):
+    salvar_estado() # Salva estado antes da operação
     df_temp = df_editado.copy()
     
-    # Inicia com todas as linhas selecionadas
     filtro_global_operacao = pd.Series([True] * len(df_temp), index=df_temp.index) 
 
-    # Aplica o filtro de palavra-chave, se houver
     if keyword_filter_op:
         df_str_temp = df_temp.astype(str)
         mask_keyword_op = df_str_temp.apply(lambda row: row.astype(str).str.contains(keyword_filter_op, case=False, na=False).any(), axis=1)
         filtro_global_operacao = filtro_global_operacao & mask_keyword_op
         
-    # Aplica o filtro por coluna específica, se houver
     if coluna_filtro_op != "(nenhuma)":
         if pd.api.types.is_numeric_dtype(df_temp[coluna_filtro_op]) and isinstance(valores_filtro_op, dict):
             mask_col_filter = (df_temp[coluna_filtro_op] >= valores_filtro_op['min']) & \
@@ -269,7 +343,6 @@ if st.button("⚡ Aplicar operações"):
                     df_temp.loc[filtro_global_operacao, col] *= val
                 elif tipo == "Divisão" and val != 0:
                     df_temp.loc[filtro_global_operacao, col] /= val
-                # LÓGICA DE AUMENTAR/DIMINUIR PORCENTAGEM
                 elif tipo == "Aumentar Porcentagem":
                     df_temp.loc[filtro_global_operacao, col] *= (1 + val / 100)
                 elif tipo == "Diminuir Porcentagem":
@@ -285,7 +358,7 @@ if st.button("⚡ Aplicar operações"):
     st.success("✅ Regras aplicadas com sucesso!")
     st.rerun()
 
-# --- 8. Regras Visuais (Condicionais) ---
+# --- 9. Regras Visuais (Condicionais) ---
 st.subheader("🎯 Regras Visuais")
 regras_visual = []
 qtd_visuais = st.number_input("Número de regras visuais", 0, 5, 0)
@@ -300,12 +373,11 @@ for i in range(int(qtd_visuais)):
     regras_visual.append({"col": colv, "op": op, "val": valv, "cor": cor})
 
 
-# --- 9. Filtros para Visualização Final ---
+# --- 10. Filtros para Visualização Final ---
 st.subheader("🔍 Filtros de Visualização")
 
 df_para_visualizacao_final = df_editado.copy()
 
-# O filtro de palavra-chave principal permanece aqui
 keyword_filter = st.text_input("Filtrar por palavra-chave (em qualquer coluna) para visualização:", key="keyword_main_filter")
 if keyword_filter:
     df_str = df_para_visualizacao_final.astype(str)
@@ -354,8 +426,10 @@ if col_datas:
             ]
 
 
-# --- 10. Lógica de Destaque da Visualização Final ---
-df_visivel = df_para_visualizacao_final[colunas_visiveis]
+# --- 11. Lógica de Destaque da Visualização Final ---
+colunas_visiveis_existentes = [col for col in colunas_visiveis if col in df_para_visualizacao_final.columns]
+df_visivel = df_para_visualizacao_final[colunas_visiveis_existentes]
+
 
 def aplicar_estilos(row):
     estilos = []
@@ -379,15 +453,18 @@ def aplicar_estilos(row):
         estilos.append(estilo)
     return estilos
 
-# --- 11. Visualização Final da Tabela ---
+# --- 12. Visualização Final da Tabela ---
 st.subheader("📋 Visualização Final")
 if regras_visual or celulas_modificadas.any().any():
-    df_final_styled = df_visivel.style.format(precision=2).apply(aplicar_estilos, axis=1)
+    if not df_visivel.empty and not df_visivel.columns.empty:
+        df_final_styled = df_visivel.style.format(precision=2).apply(aplicar_estilos, axis=1)
+    else:
+        df_final_styled = df_visivel.style.format(precision=2)
 else:
     df_final_styled = df_visivel.style.format(precision=2)
 st.dataframe(df_final_styled, use_container_width=True)
 
-# --- 12. Estatísticas Descritivas ---
+# --- 13. Estatísticas Descritivas ---
 st.subheader("📊 Estatísticas Descritivas")
 if not df_para_visualizacao_final.empty:
     df_desc = df_para_visualizacao_final.select_dtypes(include=np.number)
@@ -399,7 +476,7 @@ else:
     st.info("DataFrame vazio. Sem estatísticas para exibir.")
 
 
-# --- 13. Gráficos de Visualização ---
+# --- 14. Gráficos de Visualização ---
 st.subheader("📈 Gráficos")
 
 if not df_para_visualizacao_final.empty:
@@ -556,7 +633,7 @@ if not df_para_visualizacao_final.empty:
 else:
     st.info("O DataFrame está vazio ou filtrado. Não há dados para gerar gráficos.")
 
-# --- 14. Exportação do DataFrame ---
+# --- 15. Exportação do DataFrame ---
 st.subheader("⬇️ Exportar Dados")
 if not df_editado.empty:
     col1, col2 = st.columns(2)
