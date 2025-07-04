@@ -129,9 +129,9 @@ else:
     df_final = df_visivel.style.format(precision=2)
 st.dataframe(df_final, use_container_width=True)
 
-# Gráfico
+# Gráfico de Linha (existente)
 if len(col_numericas) >= 2:
-    st.subheader("📊 Gráfico Interativo")
+    st.subheader("📊 Gráfico de Linha Interativo")
     x = st.selectbox("Eixo X", col_numericas, key="xgraf")
     y = st.selectbox("Eixo Y", col_numericas, key="ygraf")
     grafico = alt.Chart(df_editado).mark_line(point=True).encode(
@@ -139,8 +139,67 @@ if len(col_numericas) >= 2:
     ).properties(width=700, height=400)
     st.altair_chart(grafico, use_container_width=True)
 
-# Exportação
-buffer = BytesIO()
-df_editado.to_excel(buffer, index=False, engine="openpyxl")
-buffer.seek(0)
-st.download_button("⬇️ Baixar SunniExcel", data=buffer, file_name="SunniExcel_resultado.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+---
+
+## 🥧 Gráfico de Pizza com Filtros
+
+```python
+if col_categoricas: # Só mostra a opção de gráfico de pizza se houver colunas categóricas
+    st.subheader("🥧 Gráfico de Pizza")
+
+    # Seleção da coluna categórica para as fatias
+    col_categoria_pizza = st.selectbox(
+        "Selecione a coluna para as fatias do gráfico de pizza",
+        ["(nenhuma)"] + col_categoricas,
+        key="col_pizza_cat"
+    )
+
+    if col_categoria_pizza != "(nenhuma)":
+        # Seleção opcional da coluna numérica para o valor das fatias
+        col_valor_pizza = st.selectbox(
+            "Selecione a coluna numérica para o valor das fatias (opcional)",
+            ["(nenhuma)"] + col_numericas,
+            key="col_pizza_val"
+        )
+
+        # Filtro para os valores da coluna categórica
+        valores_filtro_pizza = df_editado[col_categoria_pizza].dropna().unique().tolist()
+        filtro_pizza_selecionados = st.multiselect(
+            f"Filtrar valores para '{col_categoria_pizza}'",
+            valores_filtro_pizza,
+            default=valores_filtro_pizza,
+            key="filtro_pizza_vals"
+        )
+
+        # Aplicar filtro ao DataFrame
+        df_pizza = df_editado[df_editado[col_categoria_pizza].isin(filtro_pizza_selecionados)]
+
+        if not df_pizza.empty:
+            if col_valor_pizza != "(nenhuma)":
+                # Agrupando e somando para o gráfico de pizza
+                df_agrupado_pizza = df_pizza.groupby(col_categoria_pizza)[col_valor_pizza].sum().reset_index()
+                # Criando o gráfico de pizza com base na soma
+                chart_pizza = alt.Chart(df_agrupado_pizza).mark_arc().encode(
+                    theta=alt.Theta(field=col_valor_pizza, type="quantitative"),
+                    color=alt.Color(field=col_categoria_pizza, type="nominal", title="Categoria"),
+                    tooltip=[col_categoria_pizza, alt.Tooltip(col_valor_pizza, format=".2f")] # Formata tooltip
+                ).properties(
+                    title=f"Distribuição de {col_valor_pizza} por {col_categoria_pizza}"
+                )
+            else:
+                # Contando ocorrências se nenhuma coluna de valor for selecionada
+                df_agrupado_pizza = df_pizza[col_categoria_pizza].value_counts().reset_index()
+                df_agrupado_pizza.columns = [col_categoria_pizza, "Contagem"]
+                # Criando o gráfico de pizza com base na contagem
+                chart_pizza = alt.Chart(df_agrupado_pizza).mark_arc().encode(
+                    theta=alt.Theta(field="Contagem", type="quantitative"),
+                    color=alt.Color(field=col_categoria_pizza, type="nominal", title="Categoria"),
+                    tooltip=[col_categoria_pizza, "Contagem"]
+                ).properties(
+                    title=f"Contagem de ocorrências por {col_categoria_pizza}"
+                )
+            st.altair_chart(chart_pizza, use_container_width=True)
+        else:
+            st.warning("Nenhum dado para exibir com os filtros selecionados.")
+    else:
+        st.info("Selecione uma coluna categórica para gerar o gráfico de pizza.")
