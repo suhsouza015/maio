@@ -139,11 +139,8 @@ if len(col_numericas) >= 2:
     ).properties(width=700, height=400)
     st.altair_chart(grafico, use_container_width=True)
 
----
-
 ## 🥧 Gráfico de Pizza com Filtros
 
-```python
 if col_categoricas: # Só mostra a opção de gráfico de pizza se houver colunas categóricas
     st.subheader("🥧 Gráfico de Pizza")
 
