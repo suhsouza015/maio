@@ -1,600 +1,903 @@
 import streamlit as st
-import random # Para o quiz
+import random
+import time # Para simular um tempo de carregamento em exemplo
 
+# --- Configurações da Página ---
+st.set_page_config(
+    page_title="Curso de Python Interativo",
+    page_icon="🐍",
+    layout="wide" # Usa a largura máxima da tela
+)
+
+# --- Função do Módulo Básico ---
 def modulo_basico():
     st.header("Módulo Básico: Primeiros Passos em Python")
-    st.write("Este módulo cobre os fundamentos essenciais da programação em Python.")
+    st.write("Este módulo cobre os fundamentos essenciais da programação em Python, preparando você para construir lógicas simples e entender como o Python funciona.")
 
-    st.subheader("1. Variáveis e Tipos de Dados")
-    st.write("""
-    Variáveis são usadas para armazenar informações que podem ser usadas e manipuladas em seu programa.
-    Python é dinamicamente tipado, o que significa que você não precisa declarar o tipo de uma variável.
-    """)
-    st.code("""
-    # Exemplo de variáveis e tipos de dados
-    nome = "Python" # String (texto)
-    idade = 30      # Inteiro (número sem casas decimais)
-    altura = 1.75   # Float (número com casas decimais)
-    estudante = True # Booleano (Verdadeiro/Falso)
+    with st.expander("1. Variáveis e Tipos de Dados", expanded=True):
+        st.write("""
+        Em programação, **variáveis** são como "caixas" nomeadas na memória do computador que armazenam informações. Imagine que você está rotulando uma caixa para saber o que tem dentro dela mais tarde. Em Python, você não precisa dizer qual tipo de coisa vai guardar na caixa (como número, texto, etc.); o Python descobre isso automaticamente no momento da atribuição. Isso é chamado de **tipagem dinâmica**. Além disso, Python é uma linguagem de **tipagem forte**, o que significa que ela não fará conversões de tipo implícitas onde pode haver perda de dados ou comportamento inesperado (por exemplo, você não pode somar um número diretamente com um texto sem converter um deles).
 
-    print(f"Nome: {nome}, Idade: {idade}, Altura: {altura}, Estudante: {estudante}")
-    """)
-    st.write("---")
+        Os **tipos de dados** básicos (ou "primitivos") em Python incluem:
+        * **Inteiros (`int`)**: Números inteiros, positivos ou negativos, sem casas decimais. Usados para contagens, IDs, etc. (ex: `10`, `-5`, `1000000`).
+        * **Floats (`float`)**: Números com casas decimais, representando valores reais. Essenciais para cálculos financeiros, medições, etc. (ex: `3.14`, `-0.5`, `2.0`).
+        * **Strings (`str`)**: Sequências de caracteres, como letras, palavras ou frases. São sempre delimitadas por aspas simples (`'`) ou duplas (`"`). Usadas para manipular texto em geral.
+        * **Booleanos (`bool`)**: Representam apenas dois valores: `True` (verdadeiro) ou `False` (falso). São a base de toda a lógica de decisão em programação.
 
-    st.subheader("2. Operadores Aritméticos e Lógicos")
-    st.write("""
-    Operadores aritméticos são usados para realizar operações matemáticas.
-    Operadores lógicos (AND, OR, NOT) são usados para combinar ou negar condições.
-    """)
-    st.code("""
-    # Operadores aritméticos
-    a = 10
-    b = 5
+        **Por que são importantes?** Escolher o tipo de dado correto não só otimiza o uso da memória, mas também garante que as operações realizadas sobre os dados sejam semanticamente corretas e eficientes.
+        """)
+        st.code("""
+# Exemplo de variáveis e tipos de dados
+nome = "Alice"           # String (texto entre aspas)
+idade = 25               # Inteiro (número sem ponto decimal)
+altura = 1.68            # Float (número com ponto decimal)
+eh_estudante = True      # Booleano (Verdadeiro ou Falso)
+preco_unitario = 49.99   # Float
 
-    soma = a + b
-    subtracao = a - b
-    multiplicacao = a * b
-    divisao = a / b
-    resto = a % b
-    potencia = a ** b
+print(f"Nome: {nome} (Tipo: {type(nome)})") # type() retorna o tipo da variável
+print(f"Idade: {idade} (Tipo: {type(idade)})")
+print(f"Altura: {altura} (Tipo: {type(altura)})")
+print(f"É estudante: {eh_estudante} (Tipo: {type(eh_estudante)})")
+print(f"Preço: {preco_unitario} (Tipo: {type(preco_unitario)})")
 
-    print(f"Soma: {soma}, Subtração: {subtracao}, Multiplicação: {multiplicacao}")
-    print(f"Divisão: {divisao}, Resto: {resto}, Potência: {potencia}")
+# Reatribuindo uma variável (a caixa pode guardar outra coisa)
+# Atenção: Isso muda o tipo da variável 'idade' de int para str.
+idade = "vinte e cinco"
+print(f"Nova idade: {idade} (Tipo: {type(idade)})")
 
-    # Operadores lógicos
-    tem_idade = True
-    tem_carteira = False
+# Conversão de tipos (Type Casting)
+# Às vezes, você precisa explicitamente mudar o tipo de uma variável.
+numero_como_texto = "123"
+numero_inteiro = int(numero_como_texto) # Converte string para inteiro
+print(f"Número como texto: {numero_como_texto} (Tipo: {type(numero_como_texto)})")
+print(f"Número inteiro: {numero_inteiro} (Tipo: {type(numero_inteiro)})")
 
-    pode_dirigir = tem_idade and tem_carteira # Ambas precisam ser Verdadeiras
-    print(f"Pode dirigir (AND): {pode_dirigir}")
+# float para int trunca a parte decimal, não arredonda
+pi_arredondado = int(3.99)
+print(f"int(3.99): {pi_arredondado}") # Saída: 3
 
-    tem_dinheiro = False
-    tem_cartao = True
-    pode_comprar = tem_dinheiro or tem_cartao # Uma ou ambas precisam ser Verdadeiras
-    print(f"Pode comprar (OR): {pode_comprar}")
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Use nomes de variáveis descritivos (ex: `nome_cliente` em vez de `nc`).
+        * Siga as convenções do Python: nomes de variáveis e funções em `snake_case` (minúsculas com underscores).
+        * Evite usar palavras reservadas do Python (como `if`, `for`, `class`) como nomes de variáveis.
 
-    nao_chove = not True # Negação
-    print(f"Não chove (NOT): {nao_chove}")
-    """)
-    st.write("---")
+        **Erro Comum:** Tentar operar com tipos de dados incompatíveis sem conversão, como `5 + "olá"`, o que resultaria em um `TypeError`.
+        """)
+        st.write("---")
 
-    st.subheader("3. Entrada de Dados (input()) e Formatação de Strings")
-    st.write("""
-    Use `input()` para obter dados do usuário. F-strings (formatted string literals) são uma forma moderna e fácil de formatar strings.
-    """)
-    st.code("""
-    # Exemplo de input() (execute no seu terminal Python para testar a entrada)
-    # nome_usuario = input("Qual o seu nome? ")
-    # print(f"Olá, {nome_usuario}! Bem-vindo ao curso.")
+    with st.expander("2. Operadores Aritméticos e Lógicos"):
+        st.write("""
+        **Operadores aritméticos** são símbolos usados para realizar cálculos matemáticos. Eles seguem a tradicional **ordem de precedência** (similar ao PEMDAS/BODMAS): Parênteses, Expoentes, Multiplicação e Divisão (da esquerda para a direita), Adição e Subtração (da esquerda para a direita). Compreender essa ordem é crucial para evitar erros lógicos em seus cálculos.
 
-    # Formatação de strings com f-strings
-    produto = "Celular"
-    preco = 999.99
-    quantidade = 2
-    total = preco * quantidade
+        **Operadores de comparação** (`==`, `!=`, `<`, `<=`, `>`, `>=`) são usados para comparar dois valores e sempre retornam um valor booleano (`True` ou `False`).
 
-    print(f"Você comprou {quantidade} unidades de {produto}. O total é R${total:.2f}.")
-    """)
-    st.write("---")
+        **Operadores lógicos** (`and`, `or`, `not`) são usados para combinar ou inverter expressões booleanas, ajudando a construir condições mais complexas em suas tomadas de decisão. Eles são a espinha dorsal de qualquer fluxo de controle.
+        """)
+        st.markdown("""
+        * **Aritméticos:**
+            * `+` : Adição (ex: `5 + 3` resulta `8`)
+            * `-` : Subtração (ex: `10 - 4` resulta `6`)
+            * `*` : Multiplicação (ex: `2 * 7` resulta `14`)
+            * `/` : Divisão (sempre retorna um `float`, ex: `7 / 2` resulta `3.5`)
+            * `//` : Divisão inteira (descarta a parte decimal, ex: `7 // 2` resulta `3`)
+            * `%` : Módulo (retorna o resto da divisão, ex: `7 % 2` resulta `1`)
+            * `**` : Potenciação (ex: `2 ** 3` resulta `8`, 2 elevado a 3)
+        * **Comparação:**
+            * `==` : Igual a (ex: `5 == 5` é `True`, `5 == 6` é `False`)
+            * `!=` : Diferente de (ex: `5 != 6` é `True`)
+            * `<` : Menor que
+            * `<=` : Menor ou igual a
+            * `>` : Maior que
+            * `>=` : Maior ou igual a
+        * **Lógicos:**
+            * `and` : Retorna `True` se *ambas* as condições forem verdadeiras. Usado quando todas as condições precisam ser satisfeitas.
+            * `or` : Retorna `True` se *pelo menos uma* das condições for verdadeira. Usado quando qualquer uma das condições é suficiente.
+            * `not` : Inverte o valor booleano ( `not True` é `False`, `not False` é `True`). Usado para negar uma condição.
+        """)
+        st.code("""
+# Operadores aritméticos em ação
+x = 20
+y = 7
 
-    st.subheader("4. Estruturas Condicionais (if/elif/else)")
-    st.write("""
-    Estruturas condicionais permitem que você execute diferentes blocos de código
-    com base em uma condição ser verdadeira ou falsa.
-    """)
-    st.code("""
-    # Estruturas condicionais
-    idade = 18
+print(f"x + y = {x + y}")        # Adição: 27
+print(f"x - y = {x - y}")        # Subtração: 13
+print(f"x * y = {x * y}")        # Multiplicação: 140
+print(f"x / y = {x / y}")        # Divisão (float): 2.857...
+print(f"x // y = {x // y}")      # Divisão inteira: 2
+print(f"x % y = {x % y}")        # Módulo (resto): 6 (20 = 2*7 + 6)
+print(f"x ** 2 = {x ** 2}")      # Potenciação: 400 (20 elevado a 2)
 
-    if idade >= 18:
-        print("Você é maior de idade.")
-    else:
-        print("Você é menor de idade.")
+# Exemplo de precedência: Multiplicação/divisão antes de adição/subtração
+calculo = 5 + 3 * 2 # É 5 + (3 * 2) = 5 + 6 = 11, não (5 + 3) * 2 = 16
+print(f"Resultado de 5 + 3 * 2 = {calculo}")
 
-    temperatura = 25
-    if temperatura > 30:
-        print("Está muito quente!")
-    elif temperatura > 20:
-        print("Temperatura agradável.")
-    else:
-        print("Está frio.")
-    """)
-    st.write("---")
+# Operadores de Comparação em ação
+print(f"x == y? {x == y}")   # False (20 não é igual a 7)
+print(f"x > y? {x > y}")     # True (20 é maior que 7)
+print(f"x != y? {x != y}")   # True (20 é diferente de 7)
 
-    st.subheader("5. Estruturas de Repetição (for/while)")
-    st.write("""
-    Estruturas de repetição permitem que você execute um bloco de código
-    repetidamente.
-    """)
-    st.code("""
-    # Loop for
-    frutas = ["maçã", "banana", "cereja"]
-    for fruta in frutas:
-        print(f"Eu gosto de {fruta}")
+# Operadores lógicos em ação
+tem_permissao = True
+idade_minima = 18
+minha_idade = 20
 
-    # Loop while
-    contador = 0
-    while contador < 5:
-        print(f"Contador: {contador}")
-        contador += 1
-    """)
-    st.write("---")
+# Usando 'and': Precisa ser maior ou igual a 18 E ter permissão
+pode_entrar = (minha_idade >= idade_minima) and tem_permissao
+print(f"Pode entrar (idade >= 18 e permissão)? {pode_entrar}") # True (ambas as condições são True)
+
+tem_ingresso = False
+tem_convite = True
+
+# Usando 'or': Precisa ter ingresso OU convite
+pode_assistir = tem_ingresso or tem_convite
+print(f"Pode assistir (ingresso ou convite)? {pode_assistir}") # True (pelo menos uma condição é True)
+
+# Usando 'not': Inverte o valor booleano
+tem_dinheiro = False
+nao_tem_dinheiro = not tem_dinheiro
+print(f"Não tem dinheiro? {nao_tem_dinheiro}") # True (inverte False para True)
+
+# Combinando operadores: Cuidado com parênteses para clareza e precedência
+condicao_complexa = (minha_idade > 25 and tem_permissao) or tem_convite
+print(f"Condição complexa: {condicao_complexa}") # (False and True) or True = False or True = True
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Use parênteses para agrupar operações complexas e deixar a intenção clara, mesmo que a precedência já garanta o resultado desejado. Isso melhora a legibilidade.
+        * Não confunda `=` (atribuição) com `==` (comparação de igualdade).
+
+        **Erro Comum:** Esquecer a precedência de operadores, levando a resultados inesperados em cálculos complexos.
+        """)
+        st.write("---")
+
+    with st.expander("3. Entrada de Dados (`input()`) e Formatação de Strings (f-strings)"):
+        st.write("""
+        Para que seus programas sejam interativos, muitas vezes você precisará obter informações do usuário. A função `input()` faz exatamente isso: ela pausa o programa, exibe uma mensagem no console e espera que o usuário digite algo, retornando essa entrada sempre como uma **string**. Mesmo que o usuário digite um número, `input()` o lerá como texto, e você precisará convertê-lo (com `int()` ou `float()`) se quiser realizar operações numéricas.
+
+        Quando você quer exibir informações combinando texto estático e valores de variáveis de forma elegante e eficiente, as **f-strings** (formatted string literals) são a melhor ferramenta em Python 3.6+. Elas permitem que você incorpore expressões Python (variáveis, chamadas de função simples, etc.) diretamente dentro de strings, prefixando a string com um `f` ou `F`. Isso as torna muito mais legíveis e concisas do que métodos de formatação mais antigos como `%` ou `.format()`.
+        """)
+        st.code("""
+# Usando input() para obter dados do usuário
+# Observação: 'input()' só funciona no console/terminal, não em interfaces web como Streamlit diretamente.
+# Você usará st.text_input no Streamlit para essa finalidade.
+
+# Formatação de strings com f-strings (o 'f' antes das aspas é crucial!)
+produto = "Notebook Gamer"
+preco = 7500.50
+desconto = 0.10 # 10%
+
+preco_final = preco * (1 - desconto)
+
+# Formatação de float para 2 casas decimais com ': .2f'
+print(f"O produto '{produto}' custa R${preco:.2f}.") # :.2f formata para 2 casas decimais
+
+# Formatação de float como porcentagem com ': .0%'
+print(f"Com um desconto de {desconto:.0%}, o preço final é R${preco_final:.2f}.") # :.0% formata como porcentagem sem casas decimais
+
+# F-strings são poderosas para combinar diferentes tipos e expressões
+minha_idade = 30
+print(f"Eu tenho {minha_idade} anos e no ano que vem terei {minha_idade + 1} anos.")
+
+# Alinhamento e preenchimento
+nome_aluno = "Ana"
+nota = 9.5
+print(f"|{nome_aluno:<10}|{nota:^5.1f}|") # Alinha à esquerda (10 chars), centraliza (5 chars, 1 decimal)
+# Saída no terminal: |Ana        | 9.5 |
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Sempre use f-strings para formatação de strings em código moderno Python.
+        * Após coletar entrada com `st.text_input` no Streamlit, use `int()`, `float()`, etc., para converter para o tipo numérico adequado antes de realizar operações matemáticas.
+
+        **Erro Comum:** Esquecer de converter a entrada do `input()` (ou `st.text_input`) para um tipo numérico ao tentar fazer cálculos, resultando em `TypeError` (e.g., `ValueError` se a conversão falhar, como `int("abc")`).
+        """)
+        st.write("---")
+
+    with st.expander("4. Estruturas Condicionais (`if`/`elif`/`else`)"):
+        st.write("""
+        As **estruturas condicionais** são o que permitem que seu programa "tome decisões" e execute diferentes blocos de código com base em certas condições. Elas são a base para criar lógica de ramificação em seus programas. Uma condição é uma expressão que resulta em `True` ou `False` (um booleano).
+
+        * **`if`**: O bloco de código sob o `if` só é executado se a condição for `True`. É o ponto de partida de qualquer cadeia condicional.
+        * **`elif` (else if)**: Se a condição `if` for `False`, o programa verifica a condição do `elif` seguinte. Você pode ter múltiplos `elif` para testar várias condições sequencialmente. O primeiro `elif` cuja condição for `True` terá seu bloco executado, e o resto da cadeia será ignorado.
+        * **`else`**: Se *todas* as condições `if` e `elif` anteriores forem `False`, o bloco `else` é executado. O `else` é opcional e serve como uma "captura" para qualquer caso que não se encaixe nas condições anteriores.
+
+        A **indentação** (espaçamento no início da linha, geralmente 4 espaços) é crucial em Python! Ela define os blocos de código pertencentes a cada `if`, `elif` ou `else`. Python usa indentação para delimitar blocos, enquanto outras linguagens podem usar chaves `{}`.
+
+        **Por que são importantes?** Sem condicionais, seu programa seguiria sempre o mesmo caminho. Elas permitem criar programas que respondem a diferentes entradas, estados ou situações, tornando-os dinâmicos e úteis.
+        """)
+        st.code("""
+# Exemplo: Verificando a faixa etária e dando recomendações
+idade_visitante = 17
+
+if idade_visitante >= 18:
+    print("Você é maior de idade. Acesso liberado para todas as áreas.")
+elif idade_visitante >= 13: # Se não for >= 18, verifica se é >= 13
+    print("Você é adolescente. Acesso com restrições para algumas áreas.")
+else: # Se não for nem >= 18 nem >= 13
+    print("Você é criança. Acesso negado, necessário acompanhamento de adulto.")
+
+# Exemplo com uma única condição
+chovendo = True
+if chovendo: # É o mesmo que 'if chovendo == True:' - mais conciso
+    print("Leve um guarda-chuva!")
+    print("Considere usar galochas.") # Múltiplas linhas dentro do bloco
+
+# Exemplo com 'not' na condição
+saldo = 500
+compra = 600
+# if not (saldo >= compra): significa "Se não for verdade que saldo é maior ou igual à compra"
+if not (saldo >= compra):
+    print("Saldo insuficiente para a compra.")
+else:
+    print("Compra realizada com sucesso!")
+
+# Múltiplas condições na mesma linha com operadores lógicos
+# Apenas entra se a idade estiver entre 18 e 60 (inclusive)
+idade_candidato = 25
+if idade_candidato >= 18 and idade_candidato <= 60:
+    print("Candidato elegível pela idade.")
+
+# Se for jovem ou idoso, oferece desconto
+if idade_candidato < 18 or idade_candidato > 60:
+    print("Cliente tem direito a desconto especial.")
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Mantenha suas condições claras e concisas. Se uma condição se tornar muito complexa, considere dividi-la em variáveis booleanas intermediárias para melhorar a legibilidade.
+        * Use `elif` para cadeias de condições mutuamente exclusivas para evitar que o Python verifique condições desnecessariamente.
+        * Sempre se atente à indentação! É a fonte de muitos erros de lógica para iniciantes.
+
+        **Erro Comum:** Erros de indentação, que podem levar a `IndentationError` ou, pior, a um código que executa sem erro mas com lógica incorreta porque um bloco não está onde deveria.
+        """)
+        st.write("---")
+
+    with st.expander("5. Estruturas de Repetição (`for`/`while`)"):
+        st.write("""
+        As **estruturas de repetição** (ou laços/loops) são ferramentas poderosas que permitem que você execute um bloco de código várias vezes. Isso é fundamental para automatizar tarefas repetitivas, processar coleções de dados e simular comportamentos contínuos.
+
+        * **`for` loop**: É usado para iterar (percorrer) sobre uma **sequência** (como uma string, lista, tupla, ou um `range` de números) ou outros objetos "iteráveis". Ele executa o bloco de código uma vez para cada item na sequência, atribuindo o item atual a uma variável temporária em cada iteração.
+            * `range(n)`: Gera uma sequência de números de 0 até `n-1`. Ideal para repetir um bloco de código um número fixo de vezes.
+            * `range(inicio, fim)`: Gera de `inicio` (inclusive) até `fim-1` (exclusive).
+            * `range(inicio, fim, passo)`: Gera de `inicio` até `fim-1` pulando `passo`. `passo` pode ser negativo para contagem regressiva.
+        * **`while` loop**: Continua executando o bloco de código *enquanto* uma determinada condição for verdadeira. É ideal quando você não sabe de antemão quantas vezes o loop precisa rodar; a repetição depende de uma condição que muda durante a execução.
+            * É crucial garantir que a condição se torne falsa em algum momento, caso contrário, você terá um **loop infinito**, fazendo com que seu programa trave ou consuma muitos recursos!
+
+        Assim como nas condicionais, a **indentação** é crucial para definir o que está dentro do loop.
+
+        **Palavras-chave úteis em loops:**
+        * `break`: Sai do loop imediatamente, independentemente da condição do loop. Útil para terminar um loop quando uma condição específica é atingida.
+        * `continue`: Pula o restante do código do bloco atual do loop e vai para a próxima iteração. Útil para ignorar certos itens ou situações dentro de um loop.
+
+        **Por que são importantes?** Loops permitem que você trabalhe com grandes volumes de dados (ex: processar todos os itens em uma lista), implemente algoritmos de busca e ordenação, e crie jogos ou simulações onde ações se repetem.
+        """)
+        st.code("""
+# Loop 'for' com uma lista: Processando cada item
+ingredientes = ["farinha", "açúcar", "ovos", "leite"]
+print("Ingredientes para o bolo:")
+for item in ingredientes: # 'item' assume o valor de cada elemento da lista, um por vez
+    print(f"- {item}")
+
+# Loop 'for' com range (para repetir um número fixo de vezes)
+print("\\nContagem regressiva:")
+for i in range(5, 0, -1): # Começa em 5, vai até 1 (0 não incluso), decrementa 1
+    print(i)
+print("Decolar!")
+
+# Loop 'for' com 'enumerate': Para acessar o item e seu índice
+print("\\nItens com seus índices:")
+for index, fruta in enumerate(["maçã", "banana", "cereja"]):
+    print(f"Índice {index}: {fruta}")
+
+# Loop 'while': Senha com tentativas limitadas (simulada para Streamlit)
+# Em um app real, st.text_input ou similar seria usado em vez de simulação
+tentativas_senha = 0
+senha_correta = "segredo123"
+simular_entrada_senha = ""
+
+st.subheader("Simulação de Loop 'While' (Senha)")
+st.write("Imagine que você está digitando a senha. Este exemplo usa um loop `while`.")
+placeholder_senha = st.empty() # Placeholder para o print dinâmico
+
+while tentativas_senha < 3:
+    simular_entrada_senha = placeholder_senha.text_input(
+        f"Tentativa {tentativas_senha + 1} de 3: Digite a senha (dica: segredo123)",
+        key=f"senha_input_{tentativas_senha}"
+    )
+    if simular_entrada_senha: # Só processa se algo foi digitado
+        if simular_entrada_senha == senha_correta:
+            st.success("Senha correta! Acesso concedido.")
+            break # Sai do loop
+        else:
+            st.warning("Senha incorreta. Tente novamente.")
+        tentativas_senha += 1
+    time.sleep(0.1) # Pequena pausa para evitar sobrecarga no Streamlit
+
+if tentativas_senha >= 3 and simular_entrada_senha != senha_correta:
+    st.error("Número máximo de tentativas atingido. Acesso negado.")
+
+st.write("---")
+
+# Exemplo de 'continue': Pulando números pares
+print("\\nNúmeros ímpares de 1 a 10 (no terminal):")
+for numero in range(1, 11):
+    if numero % 2 == 0: # Se o número for par...
+        continue # ...pula para a próxima iteração do loop, sem executar o print abaixo
+    print(numero) # Este print aparecerá no terminal
+
+st.write("---")
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Use `for` loops quando souber o número de iterações (ou quando estiver iterando sobre uma coleção finita).
+        * Use `while` loops quando o número de iterações for desconhecido e depender de uma condição ser satisfeita.
+        * Sempre garanta que a condição de um `while` loop eventualmente se tornará falsa para evitar loops infinitos.
+        * Aproveite `enumerate()` para acessar tanto o item quanto seu índice em `for` loops.
+
+        **Erro Comum:** Loops infinitos (`while True:` sem uma condição de `break` interna) ou erros de `Off-by-one` (`range(5)` vai de 0 a 4, não a 5).
+        """)
+        st.write("---")
 
     st.subheader("Exercício Interativo: Verificador de Par ou Ímpar")
-    st.write("Digite um número para verificar se ele é par ou ímpar.")
+    st.write("Digite um número inteiro no campo abaixo para verificar se ele é par ou ímpar. Observe como o código usa operadores aritméticos (o operador de módulo `%`) e condicionais (`if`/`else`) para tomar essa decisão.")
     numero_str = st.text_input("Digite um número inteiro:", key="ex1_basico")
     if numero_str:
         try:
             numero = int(numero_str)
-            if numero % 2 == 0:
-                st.success(f"O número {numero} é PAR.")
+            if numero % 2 == 0: # O operador % (módulo) retorna o resto da divisão. Se o resto da divisão por 2 for 0, é par.
+                st.success(f"O número {numero} é **PAR**.")
             else:
-                st.info(f"O número {numero} é ÍMPAR.")
+                st.info(f"O número {numero} é **ÍMPAR**.")
         except ValueError:
-            st.error("Por favor, digite um número inteiro válido.")
+            st.error("Ops! Isso não parece um número inteiro. Por favor, digite apenas dígitos numéricos.")
     st.write("---")
 
+# --- Função do Módulo Intermediário ---
 def modulo_intermediario():
     st.header("Módulo Intermediário: Aprofundando em Python")
-    st.write("Este módulo aborda tópicos que aprofundam seu conhecimento em Python.")
+    st.write("Este módulo aprofunda seu conhecimento em Python, apresentando conceitos que permitem organizar e otimizar seu código, além de lidar com dados de forma mais eficiente.")
 
-    st.subheader("1. Funções")
-    st.write("""
-    Funções são blocos de código reutilizáveis que realizam uma tarefa específica.
-    Elas ajudam a organizar o código e torná-lo mais modular.
-    """)
-    st.code("""
-    # Definição e chamada de uma função
-    def saudar(nome):
-        return f"Olá, {nome}!"
+    with st.expander("1. Funções", expanded=True):
+        st.write("""
+        **Funções** são blocos de código reutilizáveis que realizam uma tarefa específica. Pense nelas como pequenas "máquinas" que você pode chamar a qualquer momento para fazer um trabalho, sem precisar reescrever o mesmo código. Elas são a espinha dorsal de um código bem organizado e são essenciais para:
+        * **Organização do código**: Dividir seu programa em partes menores e gerenciáveis, facilitando a leitura e a manutenção.
+        * **Reutilização**: Evitar a repetição de código (Princípio DRY - **D**on't **R**epeat **Y**ourself), o que torna o código mais eficiente e menos propenso a erros.
+        * **Modularidade**: Tornar o código mais fácil de entender, testar individualmente (unit testing) e depurar, pois cada função tem uma responsabilidade clara.
+        * **Abstração**: Esconder a complexidade interna de uma operação, expondo apenas o que é necessário para usá-la.
 
-    mensagem = saudar("Mundo")
-    print(mensagem)
+        Para definir uma função, usamos a palavra-chave `def`, seguida do nome da função, parênteses (que podem conter **parâmetros**), e dois pontos (`:`). O corpo da função (o código que ela executa) é indentado. A palavra-chave `return` é usada para enviar um ou mais valores de volta ao ponto onde a função foi chamada. Se uma função não tem um `return` explícito, ela implicitamente retorna `None`.
 
-    def soma(a, b):
-        return a + b
+        **Parâmetros vs. Argumentos:**
+        * **Parâmetros**: São os nomes das variáveis listadas na definição da função (ex: `nome`, `saudacao` em `def saudar_usuario(nome, saudacao)`).
+        * **Argumentos**: São os valores reais passados para a função quando ela é chamada (ex: `"Carlos"`, `"Oi"` em `saudar_usuario("Carlos", "Oi")`).
+        """)
+        st.code("""
+# Definindo uma função sem parâmetros e sem retorno (apenas executa uma ação)
+def exibir_mensagem_boas_vindas():
+    print("Bem-vindo ao mundo das funções em Python!")
 
-    resultado = soma(10, 20)
-    print(f"A soma é: {resultado}")
-    """)
-    st.write("---")
+exibir_mensagem_boas_vindas() # Chamando a função para executá-la
 
-    st.subheader("2. Listas, Tuplas, Dicionários e Conjuntos")
-    st.write("""
-    Python oferece diversas estruturas de dados para organizar informações.
-    """)
-    st.markdown("""
-    * **Listas**: Coleções ordenadas e **mutáveis** (podem ser alteradas).
-        * `append()`, `insert()`, `remove()`, `pop()`, `sort()`, `len()`
-    * **Tuplas**: Coleções ordenadas e **imutáveis** (não podem ser alteradas).
-        * Úteis para dados que não devem mudar, como coordenadas.
-    * **Dicionários**: Coleções não ordenadas de pares **chave-valor**.
-        * Acesso rápido a valores através de suas chaves.
-    * **Conjuntos**: Coleções **não ordenadas** de itens **únicos**.
-        * Úteis para remover duplicatas e operações de conjuntos (união, interseção).
-    """)
-    st.code("""
-    # Exemplos de estruturas de dados
-    lista = [1, 2, 3, "quatro"]
-    lista.append(5) # Adiciona um item
-    lista.remove(1) # Remove um item
-    print(f"Lista: {lista}")
+# Definindo uma função com parâmetros e com retorno
+# 'saudacao="Olá"' define um parâmetro com valor padrão.
+# Se o chamador não fornecer um valor para 'saudacao', "Olá" será usado.
+def saudar_usuario(nome, saudacao="Olá"):
+    mensagem = f"{saudacao}, {nome}!"
+    return mensagem # Retorna a string resultante
 
-    tupla = (10, 20, 30)
-    # tupla.append(40) # Isso causaria um erro, tuplas são imutáveis
-    print(f"Tupla: {tupla}")
+# Chamando a função com diferentes argumentos
+mensagem1 = saudar_usuario("Carlos") # Usa o valor padrão para 'saudacao'
+print(mensagem1) # Saída: Olá, Carlos!
 
-    dicionario = {"nome": "João", "idade": 30, "cidade": "São Paulo"}
-    dicionario["idade"] = 31 # Altera um valor
-    dicionario["email"] = "joao@email.com" # Adiciona um novo par
-    print(f"Dicionário: {dicionario}")
-    print(f"Idade do dicionário: {dicionario['idade']}")
+mensagem2 = saudar_usuario("Maria", "Oi") # Passando um valor explícito para 'saudacao'
+print(mensagem2) # Saída: Oi, Maria!
 
-    conjunto = {1, 2, 2, 3, 4, 4} # Itens duplicados são ignorados
-    conjunto.add(5) # Adiciona um item
-    print(f"Conjunto: {conjunto}")
+# Funções podem ter múltiplos retornos (retornam uma tupla)
+def calcular_operacoes(a, b):
+    soma = a + b
+    subtracao = a - b
+    multiplicacao = a * b
+    return soma, subtracao, multiplicacao # Retorna uma tupla de valores
 
-    # Compreensões de lista (List Comprehensions) - forma concisa de criar listas
-    quadrados = [x**2 for x in range(5)] # [0, 1, 4, 9, 16]
-    print(f"Quadrados: {quadrados}")
-    """)
-    st.write("---")
+# Desempacotando os múltiplos retornos em variáveis separadas
+resultado_soma, resultado_subtracao, resultado_multiplicacao = calcular_operacoes(10, 5)
+print(f"Soma: {resultado_soma}, Subtração: {resultado_subtracao}, Multiplicação: {resultado_multiplicacao}")
 
-    st.subheader("3. Manipulação de Strings")
-    st.write("""
-    Python oferece métodos poderosos para trabalhar com strings.
-    """)
-    st.code("""
-    texto = "Hello, Python!"
+# Argumentos nomeados (Keyword Arguments) - Melhoram a legibilidade
+print(saudar_usuario(nome="Pedro", saudacao="Bom dia"))
+print(saudar_usuario(saudacao="Boa noite", nome="Ana")) # A ordem não importa com argumentos nomeados
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Cada função deve ter uma **única responsabilidade** (Princípio da Responsabilidade Única).
+        * Use nomes de funções descritivos (verbos) que indiquem o que a função faz (ex: `calcular_media`, `gerar_relatorio`).
+        * Documente suas funções usando **docstrings** (strings de documentação de múltiplas linhas logo abaixo da definição da função) para explicar o que a função faz, seus parâmetros e o que ela retorna.
+        * Limite o número de parâmetros para manter a função simples e fácil de usar.
 
-    print(f"Tamanho da string: {len(texto)}")
-    print(f"Maiúscula: {texto.upper()}")
-    print(f"Minúscula: {texto.lower()}")
-    print(f"Substituir 'Python' por 'Streamlit': {texto.replace('Python', 'Streamlit')}")
-    print(f"Começa com 'Hello': {texto.startswith('Hello')}")
-    print(f"Split por vírgula: {texto.split(',')}")
-    """)
-    st.write("---")
+        **Erro Comum:** Esquecer os parênteses ao chamar uma função (o que a referenciaria como um objeto, em vez de executá-la) ou tentar acessar variáveis definidas dentro de uma função fora dela (elas têm escopo local).
+        """)
+        st.write("---")
 
-    st.subheader("4. Tratamento de Erros (try/except)")
-    st.write("""
-    O tratamento de erros permite que seu programa lide com exceções
-    (erros) de forma elegante, evitando que o programa trave.
-    """)
-    st.code("""
-    try:
-        resultado = 10 / 0
-    except ZeroDivisionError:
-        print("Erro: Divisão por zero!")
-    except TypeError: # Você pode capturar múltiplos tipos de erro
-        print("Erro de tipo!")
-    finally: # O bloco finally sempre será executado, ocorrendo erro ou não
-        print("Operação finalizada (mesmo com erro).")
+    with st.expander("2. Listas, Tuplas, Dicionários e Conjuntos"):
+        st.write("""
+        Python oferece diversas **estruturas de dados** embutidas, cada uma com suas características e usos específicos, para organizar e armazenar coleções de informações. A escolha da estrutura de dados correta é fundamental para a eficiência e clareza do seu código.
 
-    try:
-        numero = int("abc")
-    except ValueError:
-        print("Erro: Não foi possível converter para número inteiro.")
-    """)
-    st.write("---")
+        * **Listas (`list`)**:
+            * Coleções **ordenadas** de itens (a ordem de inserção é mantida).
+            * São **mutáveis**, ou seja, você pode adicionar, remover, modificar ou reordenar itens após a criação.
+            * Permitem itens duplicados e podem conter itens de diferentes tipos de dados.
+            * Definidas com colchetes `[]`.
+            * **Uso Ideal**: Quando você precisa de uma coleção flexível de itens que pode mudar ao longo do tempo, como uma lista de compras ou resultados de uma query.
+        * **Tuplas (`tuple`)**:
+            * Coleções **ordenadas** de itens (a ordem de inserção é mantida).
+            * São **imutáveis**, o que significa que, uma vez criadas, você não pode alterar seus itens (adicionar, remover ou modificar).
+            * Permitem itens duplicados e de diferentes tipos de dados.
+            * Definida com parênteses `()`.
+            * **Uso Ideal**: Para dados que não devem mudar, como coordenadas geográficas, configurações fixas, ou para retornar múltiplos valores de uma função.
+        * **Dicionários (`dict`)**:
+            * Coleções **ordenadas** (a partir do Python 3.7+ mantêm a ordem de inserção) de pares **chave-valor**.
+            * Cada item é um par `chave: valor`. As **chaves** devem ser únicas e **imutáveis** (geralmente strings, números ou tuplas). Os valores podem ser de qualquer tipo.
+            * São **mutáveis**.
+            * Definidos com chaves `{}`.
+            * **Uso Ideal**: Para representar dados onde você precisa associar um valor a um nome ou identificador único (como um cadastro de usuário, ou configurações de um objeto).
+        * **Conjuntos (`set`)**:
+            * Coleções **não ordenadas** de itens **únicos**.
+            * Automaticamente removem duplicatas.
+            * São **mutáveis**.
+            * Definidos com chaves `{}`, mas sem pares chave-valor. Para criar um conjunto vazio, use `set()` (pois `{}` cria um dicionário vazio).
+            * **Uso Ideal**: Para armazenar uma coleção de itens únicos, testar a presença de um item de forma muito eficiente, ou realizar operações matemáticas de conjuntos (união, interseção, diferença).
 
-    st.subheader("Exercício: Calculadora Simples com Tratamento de Erros")
-    st.write("Digite dois números e uma operação (+, -, *, /).")
-    num1_str = st.text_input("Primeiro número:", key="ex_calc_num1")
-    num2_str = st.text_input("Segundo número:", key="ex_calc_num2")
-    operacao = st.text_input("Operação (+, -, *, /):", key="ex_calc_op")
+        **Acesso a Elementos:**
+        * Listas e Tuplas: Usam **índices numéricos** (começando do 0) dentro de colchetes. Ex: `minha_lista[0]`. Índices negativos contam a partir do final (`-1` é o último elemento).
+        * Dicionários: Usam as **chaves** dentro de colchetes. Ex: `meu_dicionario['chave']`.
+        * Conjuntos: Não possuem ordem nem acesso por índice ou chave. Você apenas verifica a presença de um elemento.
+        """)
+        st.code("""
+# Exemplos detalhados de estruturas de dados
 
-    if st.button("Calcular", key="btn_calcular"):
-        try:
-            num1 = float(num1_str)
-            num2 = float(num2_str)
+# --- Listas: Flexíveis e comuns ---
+frutas = ["maçã", "banana", "laranja", "maçã", "abacaxi"] # Lista com duplicata
+print(f"Lista original: {frutas}")
+print(f"Primeira fruta (índice 0): {frutas[0]}")
+print(f"Última fruta (índice -1): {frutas[-1]}")
 
-            if operacao == '+':
-                resultado = num1 + num2
-            elif operacao == '-':
-                resultado = num1 - num2
-            elif operacao == '*':
-                resultado = num1 * num2
-            elif operacao == '/':
-                if num2 == 0:
-                    st.error("Erro: Divisão por zero não é permitida.")
-                    resultado = "Erro"
-                else:
-                    resultado = num1 / num2
-            else:
-                st.warning("Operação inválida. Use +, -, *, ou /.")
-                resultado = "Erro"
+frutas.append("uva") # Adiciona um item no final
+print(f"Lista após append('uva'): {frutas}")
+frutas.insert(1, "kiwi") # Insere 'kiwi' no índice 1 (desloca outros itens)
+print(f"Lista após insert(1, 'kiwi'): {frutas}")
+frutas.remove("maçã") # Remove a *primeira* ocorrência do valor "maçã"
+print(f"Lista após remove('maçã'): {frutas}")
+ultima_fruta_removida = frutas.pop() # Remove e retorna o *último* item
+print(f"Última fruta removida com pop(): {ultima_fruta_removida}, Lista atualizada: {frutas}")
+print(f"Tamanho da lista: {len(frutas)}") # len() retorna o número de elementos
 
-            if resultado != "Erro":
-                st.success(f"Resultado: {resultado}")
+# --- Tuplas: Para dados fixos ---
+coordenadas = (10.5, 20.3, 5.0) # Tupla de coordenadas (latitude, longitude, altitude)
+print(f"Coordenadas: {coordenadas}")
+print(f"Latitude: {coordenadas[0]}, Longitude: {coordenadas[1]}")
+# coordenadas[0] = 11.0 # Isso causaria um erro (TypeError)! Tuplas são imutáveis.
 
-        except ValueError:
-            st.error("Erro: Por favor, insira números válidos.")
+# --- Dicionários: Para dados com rótulos (chaves) ---
+pessoa = {
+    "nome": "João Silva",
+    "idade": 30,
+    "cidade": "Rio de Janeiro",
+    "profissao": "Engenheiro"
+}
+print(f"Dicionário original: {pessoa}")
+print(f"Nome da pessoa: {pessoa['nome']}") # Acessa o valor associado à chave 'nome'
 
-    st.write("---")
+pessoa["idade"] = 31 # Altera o valor de uma chave existente
+pessoa["email"] = "joao.silva@email.com" # Adiciona um novo par chave-valor
+print(f"Dicionário atualizado: {pessoa}")
 
+# Verificando se uma chave existe
+if "profissao" in pessoa:
+    print(f"Profissão: {pessoa['profissao']}")
+
+# Usando .get() para acessar valores (evita KeyError se a chave não existir)
+telefone = pessoa.get("telefone", "Não informado") # Se 'telefone' não existe, retorna "Não informado"
+print(f"Telefone: {telefone}")
+
+# Percorrendo um dicionário
+print("\\nIterando sobre o dicionário:")
+for chave, valor in pessoa.items(): # .items() retorna pares chave-valor
+    print(f"{chave.capitalize()}: {valor}") # .capitalize() deixa a primeira letra maiúscula
+
+# --- Conjuntos: Para itens únicos ---
+numeros_duplicados = [1, 2, 2, 3, 4, 4, 5, 1]
+conjunto_numeros = set(numeros_duplicados) # Converte lista para conjunto, removendo duplicatas
+print(f"Lista com duplicatas: {numeros_duplicados}")
+print(f"Conjunto de números únicos: {conjunto_numeros}")
+
+conjunto_numeros.add(6) # Adiciona um item (se já existir, não faz nada)
+print(f"Conjunto após adicionar 6: {conjunto_numeros}")
+conjunto_numeros.remove(2) # Remove um item (causa KeyError se o item não estiver presente)
+print(f"Conjunto após remover 2: {conjunto_numeros}")
+
+# Testando pertencimento (muito rápido em conjuntos, O(1) em média)
+if 3 in conjunto_numeros:
+    print("O número 3 está no conjunto.")
+if 9 not in conjunto_numeros:
+    print("O número 9 NÃO está no conjunto.")
+
+# Operações de conjunto
+set1 = {1, 2, 3, 4}
+set2 = {3, 4, 5, 6}
+print(f"União (set1 | set2): {set1 | set2}")         # Elementos presentes em set1 OU set2
+print(f"Interseção (set1 & set2): {set1 & set2}")    # Elementos presentes em set1 E set2
+print(f"Diferença (set1 - set2): {set1 - set2}")      # Elementos em set1 MAS NÃO em set2
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Escolha a estrutura de dados mais adequada para o problema. Listas para coleções ordenadas mutáveis, tuplas para dados fixos, dicionários para mapeamentos chave-valor, e conjuntos para coleções de itens únicos.
+        * Para dicionários, use `.get(chave, valor_padrao)` para acessar valores se houver chance de a chave não existir, evitando `KeyError`.
+        * Aproveite as operações de conjunto para eficientemente lidar com elementos únicos e relações entre coleções.
+
+        **Erro Comum:** `IndexError` ao tentar acessar um índice que não existe em listas/tuplas, ou `KeyError` ao tentar acessar uma chave que não existe em dicionários. Tentar modificar uma tupla.
+        """)
+        st.write("---")
+
+    with st.expander("3. Manipulação de Strings", expanded=True):
+        st.write("""
+        Strings são sequências de caracteres e, por serem tão fundamentais em quase todos os programas, Python oferece uma vasta gama de métodos para manipulá-las de forma eficiente. Você pode combinar, dividir, substituir, formatar e muito mais.
+
+        * **Imutabilidade**: Uma propriedade crucial das strings em Python é que elas são **imutáveis**. Isso significa que, uma vez criada, uma string não pode ser alterada. Qualquer operação que "modifique" uma string (como converter para maiúsculas) na verdade retorna uma **nova string**.
+        """)
+        st.code("""
+texto = "Olá, Mundo Python!"
+
+# Métodos comuns de string:
+print(f"Original: '{texto}'")
+print(f"Maiúsculas: '{texto.upper()}'")
+print(f"Minúsculas: '{texto.lower()}'")
+print(f"Primeira letra maiúscula: '{texto.capitalize()}'") # Apenas a primeira letra da frase
+
+# Substituição
+novo_texto = texto.replace("Python", "Streamlit")
+print(f"Substituído: '{novo_texto}'")
+
+# Dividir string (split)
+palavras = texto.split(" ") # Divide pelo espaço em branco
+print(f"Palavras (split): {palavras}")
+
+# Juntar strings (join)
+lista_de_palavras = ["Python", "é", "incrível"]
+frase_nova = " ".join(lista_de_palavras) # Junta as palavras com espaço
+print(f"Frase juntada: '{frase_nova}'")
+
+# Verificação (startswith, endswith, in)
+print(f"Começa com 'Olá'? {texto.startswith('Olá')}")
+print(f"Termina com '!'? {texto.endswith('!')}")
+print(f"'Mundo' está em texto? {'Mundo' in texto}")
+
+# Remover espaços em branco (strip)
+texto_com_espacos = "    Olá, espaço!   "
+print(f"Original com espaços: '{texto_com_espacos}'")
+print(f"Sem espaços (strip): '{texto_com_espacos.strip()}'")
+
+# Fatiamento (Slicing) - [inicio:fim:passo]
+# Lembrar: o 'fim' é exclusivo (não incluído)
+print(f"Primeiros 4 caracteres: '{texto[0:4]}'")
+print(f"Do 5º ao 10º caracter: '{texto[4:10]}'")
+print(f"Do 6º caracter até o final: '{texto[5:]}'")
+print(f"Os últimos 5 caracteres: '{texto[-5:]}'")
+print(f"Inverter string: '{texto[::-1]}'") # Passo negativo inverte
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Sempre se lembre da **imutabilidade** das strings. Os métodos retornam novas strings.
+        * Use `strip()` para limpar entradas de usuário de espaços indesejados.
+        * Explore a documentação para descobrir outros métodos úteis (ex: `isdigit()`, `isalpha()`, `count()`).
+
+        **Erro Comum:** Tentar modificar uma string no lugar (ex: `minha_string.upper()` não muda `minha_string`, você precisa `minha_string = minha_string.upper()`).
+        """)
+        st.write("---")
+
+    with st.expander("4. Classes e Objetos (Programação Orientada a Objetos - POO)"):
+        st.write("""
+        A **Programação Orientada a Objetos (POO)** é um paradigma de programação que organiza o código em torno de **objetos**, em vez de apenas funções e lógica. Ela visa modelar entidades do mundo real ou conceitos abstratos, tornando o código mais modular, reutilizável e fácil de manter.
+
+        Os conceitos chave da POO são:
+        * **Classe**: É um "molde" ou "planta" para criar objetos. Ela define as características (atributos) e os comportamentos (métodos) que os objetos daquela classe terão. Pense em uma classe `Carro` que define que todo carro tem `cor`, `modelo` e pode `acelerar`.
+        * **Objeto (Instância)**: É uma realização concreta de uma classe. Cada carro específico (um Fiat Uno vermelho, um Tesla azul) seria um objeto da classe `Carro`.
+        * **Atributos**: São as variáveis que pertencem a uma classe ou objeto, representando suas características (ex: `cor`, `modelo` de um carro).
+        * **Métodos**: São as funções que pertencem a uma classe ou objeto, representando seus comportamentos (ex: `acelerar()`, `frear()` de um carro).
+        * **`self`**: É o primeiro parâmetro de qualquer método em uma classe Python. Ele referencia a própria instância do objeto, permitindo acessar seus atributos e outros métodos. É uma convenção e é crucial.
+        * **`__init__` (Método Construtor)**: Um método especial que é automaticamente chamado quando um novo objeto (instância) da classe é criado. É usado para inicializar os atributos do objeto.
+
+        **Pilares da POO (breve introdução):**
+        * **Encapsulamento**: Agrupar dados (atributos) e métodos que operam sobre esses dados dentro de uma única unidade (a classe), controlando o acesso externo.
+        * **Herança**: Permite que uma nova classe (subclasse) herde atributos e métodos de uma classe existente (superclasse), promovendo a reutilização de código.
+        * **Polimorfismo**: A capacidade de objetos de diferentes classes responderem à mesma mensagem (chamada de método) de maneiras diferentes.
+        * **Abstração**: Focar nos aspectos essenciais de um objeto e esconder os detalhes complexos de implementação.
+
+        **Por que usar POO?** Para programas maiores e mais complexos, a POO ajuda a gerenciar a complexidade, promover a reutilização de código e criar sistemas mais flexíveis e fáceis de escalar.
+        """)
+        st.code("""
+# Definindo uma Classe 'Cachorro'
+class Cachorro:
+    # Método construtor: chamado ao criar um novo objeto Cachorro
+    def __init__(self, nome, raca, idade):
+        self.nome = nome  # Atributo 'nome'
+        self.raca = raca  # Atributo 'raca'
+        self.idade = idade # Atributo 'idade'
+        print(f"Um novo cachorro chamado {self.nome} foi criado!")
+
+    # Método para o cachorro latir
+    def latir(self):
+        return f"{self.nome} diz: Au au!"
+
+    # Método para o cachorro envelhecer
+    def envelhecer(self):
+        self.idade += 1
+        return f"{self.nome} agora tem {self.idade} anos."
+
+# Criando objetos (instâncias) da classe Cachorro
+meu_cachorro = Cachorro("Buddy", "Golden Retriever", 3)
+outro_cachorro = Cachorro("Luna", "Poodle", 1)
+
+# Acessando atributos dos objetos
+print(f"Meu cachorro é um {meu_cachorro.raca} chamado {meu_cachorro.nome}.")
+print(f"O outro cachorro é uma {outro_cachorro.raca} de {outro_cachorro.idade} ano(s).")
+
+# Chamando métodos dos objetos
+print(meu_cachorro.latir())
+print(outro_cachorro.latir())
+
+# Alterando um atributo diretamente
+meu_cachorro.idade = 4
+print(f"Idade do {meu_cachorro.nome} foi atualizada para {meu_cachorro.idade}.")
+
+# Usando o método para alterar o estado do objeto
+print(outro_cachorro.envelhecer())
+print(f"Nova idade de {outro_cachorro.nome}: {outro_cachorro.idade}")
+
+
+# Exemplo de Herança
+class Gato(Cachorro): # Gato herda de Cachorro
+    def __init__(self, nome, raca, idade, cor_pelo):
+        super().__init__(nome, raca, idade) # Chama o construtor da classe pai
+        self.cor_pelo = cor_pelo # Atributo específico de Gato
+
+    def miar(self): # Método específico de Gato
+        return f"{self.nome} diz: Miau!"
+
+    # Exemplo de Polimorfismo: sobrescrevendo um método da classe pai
+    def latir(self):
+        return f"{self.nome} (o gato) tenta latir: Meow-au!"
+
+meu_gato = Gato("Whiskers", "Siamês", 2, "Creme")
+print(f"Meu gato é um {meu_gato.raca} de {meu_gato.cor_pelo} chamado {meu_gato.nome}.")
+print(meu_gato.miar())
+print(meu_gato.latir()) # Apesar de herdar latir(), ele usa a versão de Gato
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Nomes de classes começam com letra maiúscula (`CamelCase`).
+        * Defina atributos essenciais no construtor `__init__`.
+        * Mantenha os métodos com uma única responsabilidade.
+        * Use `super().__init__()` ao herdar para inicializar a classe pai.
+
+        **Erro Comum:** Esquecer o `self` como primeiro parâmetro dos métodos de instância, ou tentar acessar atributos de instância sem `self.`.
+        """)
+        st.write("---")
+
+# --- Função do Módulo Avançado ---
 def modulo_avancado():
-    st.header("Módulo Avançado: Tópicos Complexos em Python")
-    st.write("Este módulo explora conceitos mais avançados e poderosos de Python.")
+    st.header("Módulo Avançado: Tópicos Essenciais e Aplicações Reais")
+    st.write("Este módulo cobre técnicas avançadas para tornar seus programas mais robustos, eficientes e interativos, além de abordar conceitos cruciais para o desenvolvimento de aplicações.")
 
-    st.subheader("1. Programação Orientada a Objetos (POO)")
-    st.write("""
-    POO é um paradigma de programação baseado no conceito de "**objetos**",
-    que podem conter **dados** (atributos) e **código** (métodos).
-    Abstracão, Encapsulamento, Herança e Polimorfismo são pilares da POO.
-    """)
-    st.code("""
-    class Carro:
-        def __init__(self, marca, modelo, ano): # Construtor da classe
-            self.marca = marca # Atributos
-            self.modelo = modelo
-            self.ano = ano
-            self.velocidade = 0
+    with st.expander("1. Tratamento de Erros (`try`/`except`/`finally`)", expanded=True):
+        st.write("""
+        Em programação, erros (ou exceções) acontecem. Eles podem ser causados por entradas inválidas do usuário, arquivos que não existem, problemas de rede, etc. Um programa bem construído não "trava" quando um erro ocorre, mas sim **trata** a situação de forma elegante.
 
-        def acelerar(self, incremento): # Método
-            self.velocidade += incremento
-            return f"{self.modelo} acelerou para {self.velocidade} km/h."
+        O Python oferece o bloco `try-except-finally` para o tratamento de exceções:
+        * **`try`**: O código que *pode* gerar um erro é colocado dentro deste bloco.
+        * **`except`**: Se um erro ocorrer no bloco `try`, o Python procura por um bloco `except` que corresponda ao tipo de erro. Se encontrar, o código dentro deste `except` é executado. Você pode ter múltiplos blocos `except` para diferentes tipos de erro, ou um `except` genérico para capturar qualquer erro.
+        * **`else`**: (Opcional) O código dentro do `else` é executado **somente** se o bloco `try` for executado com sucesso (sem nenhum erro).
+        * **`finally`**: (Opcional) O código dentro do `finally` é **sempre** executado, independentemente de um erro ter ocorrido ou não. É ideal para tarefas de limpeza, como fechar arquivos ou conexões de banco de dados.
 
-        def exibir_info(self): # Método
-            return f"Marca: {self.marca}, Modelo: {self.modelo}, Ano: {self.ano}"
-
-    # Criando objetos (instâncias da classe Carro)
-    meu_carro = Carro("Toyota", "Corolla", 2023)
-    outro_carro = Carro("Honda", "Civic", 2024)
-
-    st.write(f"Informações do meu carro: {meu_carro.exibir_info()}")
-    st.write(f"Informações do outro carro: {outro_carro.exibir_info()}")
-    st.write(meu_carro.acelerar(50))
-
-    # Herança: Criando uma subclasse
-    class Eletrico(Carro):
-        def __init__(self, marca, modelo, ano, autonomia):
-            super().__init__(marca, modelo, ano) # Chama o construtor da classe pai
-            self.autonomia = autonomia
-
-        def carregar(self):
-            return f"{self.modelo} está carregando a bateria."
-
-    tesla = Eletrico("Tesla", "Model S", 2024, 600)
-    st.write(tesla.exibir_info())
-    st.write(tesla.carregar())
-    """)
-    st.write("---")
-
-    st.subheader("2. Manipulação de Arquivos")
-    st.write("""
-    Aprenda a ler e escrever em arquivos de texto.
-    O uso de `with open(...) as f:` garante que o arquivo seja fechado automaticamente.
-    """)
-    st.code("""
-    # Escrever em um arquivo
-    conteudo_para_escrever = "Olá, este é um teste de escrita de arquivo.\\nMais uma linha.\\n"
-    with open("meu_arquivo.txt", "w") as f: # 'w' para escrita (cria/sobrescreve)
-        f.write(conteudo_para_escrever)
-
-    st.write("Arquivo 'meu_arquivo.txt' criado e escrito.")
-
-    # Ler de um arquivo
-    try:
-        with open("meu_arquivo.txt", "r") as f: # 'r' para leitura
-            conteudo = f.read() # Lê todo o conteúdo
-            st.write("Conteúdo do arquivo 'meu_arquivo.txt':")
-            st.code(conteudo)
-    except FileNotFoundError:
-        st.error("Arquivo 'meu_arquivo.txt' não encontrado.")
-
-    # Adicionar conteúdo ao arquivo (modo 'a' - append)
-    with open("meu_arquivo.txt", "a") as f:
-        f.write("Esta linha foi adicionada depois.\\n")
-    st.write("Conteúdo adicional foi escrito no arquivo.")
-
-    with open("meu_arquivo.txt", "r") as f:
-        conteudo_atualizado = f.read()
-        st.write("Conteúdo atualizado do arquivo 'meu_arquivo.txt':")
-        st.code(conteudo_atualizado)
-    """)
-    st.write("---")
-
-    st.subheader("3. Módulos e Pacotes")
-    st.write("""
-    **Módulos** são arquivos Python contendo definições e declarações Python (funções, classes, variáveis).
-    **Pacotes** são coleções de módulos, organizados em diretórios.
-    """)
-    st.code("""
-    # Exemplo de importação de módulo
-    import math
-
-    st.write(f"Valor de PI: {math.pi}")
-    st.write(f"Raiz quadrada de 16: {math.sqrt(16)}")
-
-    # Você também pode importar partes específicas de um módulo
-    from datetime import date, datetime # Importando múltiplas coisas
-    hoje = date.today()
-    agora = datetime.now()
-    st.write(f"Data de hoje: {hoje}")
-    st.write(f"Data e hora agora: {agora}")
-
-    # Importando com alias
-    import numpy as np
-    array_numpy = np.array([1, 2, 3])
-    st.write(f"Array numpy: {array_numpy}")
-    """)
-    st.write("---")
-
-    st.subheader("4. Decoradores")
-    st.write("""
-    **Decoradores** são funções que modificam o comportamento de outras funções
-    ou métodos. Eles usam a sintaxe `@` antes da definição da função.
-    """)
-    st.code("""
-    def meu_decorador(func):
-        def wrapper(*args, **kwargs): # Permite que a função decorada receba argumentos
-            st.write("Antes da função ser chamada.")
-            resultado = func(*args, **kwargs) # Chama a função original
-            st.write("Depois da função ser chamada.")
-            return resultado
-        return wrapper
-
-    @meu_decorador
-    def saudacao(nome):
-        st.write(f"Olá, {nome}! Minha função está sendo executada.")
-        return f"Saudação para {nome} concluída."
-
-    saudacao("Alice")
-
-    @meu_decorador
-    def soma_dois_numeros(a, b):
-        s = a + b
-        st.write(f"A soma de {a} e {b} é {s}")
-        return s
-
-    soma_dois_numeros(5, 3)
-    """)
-    st.write("---")
-
-    st.subheader("5. Geradores e Iteradores")
-    st.write("""
-    **Geradores** são funções que retornam um iterador que produz uma sequência
-    de resultados sob demanda usando a palavra-chave `yield`, economizando memória.
-    **Iteradores** são objetos que implementam os métodos `__iter__()` e `__next__()`.
-    """)
-    st.code("""
-    def gerador_numeros_pares(limite):
-        n = 0
-        while n <= limite:
-            yield n
-            n += 2
-
-    st.write("Números pares gerados (até 10):")
-    for num in gerador_numeros_pares(10):
-        st.write(num)
-
-    # Exemplo de iterador manual
-    minha_lista = [10, 20, 30]
-    meu_iterador = iter(minha_lista) # Obtém um iterador da lista
-
-    try:
-        st.write(f"Primeiro item: {next(meu_iterador)}") # Pega o próximo item
-        st.write(f"Segundo item: {next(meu_iterador)}")
-        st.write(f"Terceiro item: {next(meu_iterador)}")
-        # st.write(f"Quarto item: {next(meu_iterador)}") # Isso causaria um StopIteration
-    except StopIteration:
-        st.write("Fim dos itens do iterador.")
-    """)
-    st.write("---")
-
-    st.subheader("6. Expressões Regulares (regex)")
-    st.write("""
-    **Expressões Regulares** (regex) são sequências de caracteres que formam um
-    padrão de busca. Elas são usadas para encontrar e manipular textos complexos.
-    O módulo `re` do Python é usado para trabalhar com regex.
-    """)
-    st.code("""
-    import re
-
-    texto = "Meu e-mail é exemplo@dominio.com.br e outro é teste@mail.org"
-
-    # Encontrar todos os e-mails no texto
-    padrao_email = r'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b'
-    emails_encontrados = re.findall(padrao_email, texto)
-    st.write(f"E-mails encontrados: {emails_encontrados}")
-
-    # Substituir um padrão
-    texto_modificado = re.sub(r'e-mail', 'endereço eletrônico', texto)
-    st.write(f"Texto modificado: {texto_modificado}")
-
-    # Verificar se um padrão existe (match)
-    if re.match(r'Meu', texto):
-        st.write("O texto começa com 'Meu'.")
+        **Por que são importantes?** O tratamento de erros melhora a **robustez** e a **experiência do usuário** do seu programa, evitando que ele crash e fornecendo feedback útil em caso de problemas.
+        """)
+        st.code("""
+# Exemplo 1: Tratamento de divisão por zero
+try:
+    numero1 = float(st.text_input("Digite o primeiro número (para divisão):", key="num1_div"))
+    numero2 = float(st.text_input("Digite o segundo número (para divisão):", key="num2_div"))
+    
+    # Validação adicional para evitar ValueError se o input for vazio
+    if not st.session_state.get("num1_div") or not st.session_state.get("num2_div"):
+        st.info("Digite ambos os números para ver o resultado da divisão.")
     else:
-        st.write("O texto não começa com 'Meu'.")
-    """)
+        resultado = numero1 / numero2
+        st.success(f"Resultado da divisão: {resultado}")
+except ValueError:
+    st.error("Erro: Por favor, digite apenas números válidos.")
+except ZeroDivisionError:
+    st.error("Erro: Não é possível dividir por zero!")
+except Exception as e: # Captura qualquer outro erro inesperado
+    st.error(f"Ocorreu um erro inesperado: {e}")
+finally:
+    st.info("Operação de divisão finalizada (bloco finally).")
+
+st.write("---")
+
+# Exemplo 2: Tratamento de arquivo não encontrado
+st.subheader("Simulação de Leitura de Arquivo")
+st.write("Este exemplo simula a leitura de um arquivo. Tente com um nome que não existe, como 'meu_arquivo_inexistente.txt'.")
+nome_arquivo = st.text_input("Nome do arquivo para tentar ler (ex: 'dados.txt'):", key="file_name_input")
+
+if st.button("Tentar Ler Arquivo", key="read_file_btn"):
+    if not nome_arquivo:
+        st.warning("Por favor, digite um nome de arquivo.")
+    else:
+        try:
+            with open(nome_arquivo, 'r') as f: # Tenta abrir o arquivo no modo leitura
+                conteudo = f.read()
+                st.code(f"Conteúdo de '{nome_arquivo}':\\n{conteudo}")
+        except FileNotFoundError:
+            st.error(f"Erro: O arquivo '{nome_arquivo}' não foi encontrado. Certifique-se de que ele existe e o caminho está correto.")
+        except IOError: # Erros de entrada/saída mais genéricos
+            st.error(f"Erro de I/O ao tentar ler '{nome_arquivo}'.")
+        except Exception as e:
+            st.error(f"Ocorreu um erro inesperado: {e}")
+        finally:
+            st.info("Tentativa de leitura de arquivo concluída.")
+
+# Para testar o FileNotFoundError, você pode criar um arquivo temporário:
+# with open("dados.txt", "w") as f:
+#    f.write("Linha 1\\nLinha 2")
+# E depois apagar para testar o erro.
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Seja específico nos blocos `except`: capture os tipos de exceção que você espera (ex: `ValueError`, `FileNotFoundError`) para lidar com eles de forma adequada.
+        * Evite um `except` genérico (`except Exception as e:`) a menos que você queira pegar *todos* os erros e registrar/exibir a mensagem para depuração.
+        * Use o bloco `finally` para garantir que recursos (arquivos, conexões) sejam fechados ou liberados, mesmo que um erro ocorra.
+
+        **Erro Comum:** Não tratar erros, fazendo com que o programa "quebre" (crash) para o usuário, ou usar um `except` muito genérico que esconde problemas reais de lógica.
+        """)
+        st.write("---")
+
+    with st.expander("2. Manipulação de Arquivos"):
+        st.write("""
+        Interagir com arquivos é uma funcionalidade fundamental para a maioria dos programas, permitindo que eles salvem dados, carreguem configurações ou processem informações persistentes. Em Python, a manipulação de arquivos é feita principalmente com a função `open()`.
+
+        **Modos de Abertura:**
+        * `'r'` (read): Abre o arquivo para leitura. É o modo padrão. O arquivo deve existir, caso contrário, `FileNotFoundError` será levantado.
+        * `'w'` (write): Abre o arquivo para escrita. Se o arquivo não existir, um novo é criado. **Cuidado**: Se o arquivo já existir, **seu conteúdo será TRUNCADO (apagado)!**
+        * `'a'` (append): Abre o arquivo para escrita no final (apêndice). Se o arquivo não existir, um novo é criado. Se existir, o novo conteúdo é adicionado ao final do arquivo, sem apagar o que já está lá.
+        * `'x'` (exclusive creation): Cria um novo arquivo para escrita. Se o arquivo já existir, levanta um `FileExistsError`.
+        * `'t'` (text): Modo texto (padrão). Usado para lidar com strings.
+        * `'b'` (binary): Modo binário. Usado para lidar com bytes (imagens, vídeos, executáveis).
+
+        **Context Manager (`with open(...) as ...`)**:
+        É a forma **recomendada** de manipular arquivos em Python. Ele garante que o arquivo seja automaticamente fechado, mesmo que ocorra um erro durante a operação, evitando vazamentos de recursos.
+
+        **Leitura:**
+        * `f.read()`: Lê todo o conteúdo do arquivo como uma única string.
+        * `f.readline()`: Lê uma única linha do arquivo.
+        * `f.readlines()`: Lê todas as linhas do arquivo em uma lista de strings.
+        * Iterar sobre o objeto arquivo (`for linha in f:`): A forma mais eficiente de ler arquivos linha por linha, especialmente para arquivos grandes.
+
+        **Escrita:**
+        * `f.write(string)`: Escreve uma string no arquivo. Não adiciona quebras de linha automaticamente.
+        * `f.writelines(lista_de_strings)`: Escreve uma lista de strings no arquivo. Também não adiciona quebras de linha automaticamente, então inclua `\\n` nas suas strings, se desejar.
+
+        **Por que são importantes?** A manipulação de arquivos é fundamental para persistir dados, ler configurações, gerar relatórios e interagir com o sistema de arquivos do computador.
+        """)
+        st.code("""
+import os # Módulo para interagir com o sistema operacional (ex: verificar se arquivo existe)
+
+# --- Exemplo de Escrita em Arquivo (Modo 'w') ---
+st.subheader("Escrevendo em um Arquivo (Modo 'w')")
+st.write("Isso irá criar ou sobrescrever o arquivo 'exemplo_escrita.txt'.")
+conteudo_para_escrever = st.text_area("Conteúdo para o arquivo 'exemplo_escrita.txt':", 
+                                        "Linha 1: Olá Python!\nLinha 2: Streamlit é legal.", 
+                                        key="write_content")
+if st.button("Escrever no Arquivo (Sobrescrever)", key="write_file_btn"):
+    try:
+        with open("exemplo_escrita.txt", "w") as f:
+            f.write(conteudo_para_escrever)
+        st.success("Conteúdo gravado com sucesso em 'exemplo_escrita.txt'!")
+    except IOError as e:
+        st.error(f"Erro de I/O ao escrever: {e}")
+
+# --- Exemplo de Leitura de Arquivo (Modo 'r') ---
+st.subheader("Lendo de um Arquivo (Modo 'r')")
+st.write("Tente ler o arquivo que você acabou de criar ou um que já exista.")
+nome_arquivo_leitura = st.text_input("Nome do arquivo para ler:", "exemplo_escrita.txt", key="read_file_name")
+
+if st.button("Ler Arquivo", key="read_file_btn_2"):
+    if not os.path.exists(nome_arquivo_leitura):
+        st.warning(f"O arquivo '{nome_arquivo_leitura}' não existe. Crie-o primeiro ou digite um nome válido.")
+    else:
+        try:
+            with open(nome_arquivo_leitura, "r") as f:
+                conteudo_lido = f.read()
+                st.info(f"Conteúdo de '{nome_arquivo_leitura}':")
+                st.code(conteudo_lido)
+        except Exception as e:
+            st.error(f"Ocorreu um erro ao ler o arquivo: {e}")
+
+# --- Exemplo de Adicionar Conteúdo (Modo 'a') ---
+st.subheader("Adicionando Conteúdo a um Arquivo (Modo 'a')")
+st.write("Isso adicionará uma nova linha ao arquivo 'exemplo_escrita.txt'.")
+conteudo_para_adicionar = st.text_input("Conteúdo para adicionar:", "Nova linha adicionada em " + time.ctime(), key="append_content")
+if st.button("Adicionar ao Arquivo", key="append_file_btn"):
+    try:
+        with open("exemplo_escrita.txt", "a") as f:
+            f.write("\\n" + conteudo_para_adicionar) # Adiciona uma quebra de linha antes
+        st.success("Conteúdo adicionado com sucesso a 'exemplo_escrita.txt'!")
+    except IOError as e:
+        st.error(f"Erro de I/O ao adicionar: {e}")
+
+st.write("---")
+""")
+        st.write("""
+        **Melhores Práticas:**
+        * Sempre use o `with open(...)` para garantir que os arquivos sejam fechados corretamente.
+        * Escolha o modo de abertura (`'r'`, `'w'`, `'a'`) com cuidado, especialmente `'w'` que pode apagar dados.
+        * Lembre-se que `write()` não adiciona quebras de linha (`\\n`). Adicione-as manualmente se precisar.
+        * Para arquivos grandes, leia linha por linha (`for linha in f:`) em vez de carregar tudo com `f.read()` para economizar memória.
+
+        **Erro Comum:** `FileNotFoundError` ao tentar ler um arquivo que não existe, ou sobrescrever acidentalmente um arquivo importante usando o modo `'w'`.
+        """)
+        st.write("---")
+
+    st.subheader("Exercício Interativo: Contador de Palavras")
+    st.write("Cole um texto abaixo e descubra quantas palavras únicas ele contém. Este exercício usa manipulação de strings, conjuntos e tratamento de erros.")
+    
+    texto_para_contar = st.text_area("Cole seu texto aqui:", key="text_counter_input")
+    
+    if st.button("Contar Palavras Únicas", key="count_words_btn"):
+        if not texto_para_contar:
+            st.warning("Por favor, cole algum texto para contar as palavras.")
+        else:
+            try:
+                # Converte para minúsculas e remove pontuações para melhor contagem
+                texto_limpo = texto_para_contar.lower()
+                
+                # Poderíamos usar uma expressão regular, mas para simplificar:
+                # Remove caracteres não alfanuméricos e substitui por espaço
+                for char in '.,;!?:()"':
+                    texto_limpo = texto_limpo.replace(char, ' ')
+                
+                palavras = texto_limpo.split() # Divide em palavras usando espaços
+                
+                # Usa um conjunto para obter palavras únicas
+                palavras_unicas = set(palavras)
+                
+                st.success(f"Seu texto contém **{len(palavras_unicas)}** palavras únicas.")
+                st.write("As palavras únicas são:", sorted(list(palavras_unicas))) # Exibe ordenado
+            except Exception as e:
+                st.error(f"Ocorreu um erro ao processar o texto: {e}")
     st.write("---")
 
+# --- Estrutura Principal do Aplicativo Streamlit ---
+if __name__ == "__main__":
+    st.title("🐍 Curso de Python Interativo")
+    st.markdown("Bem-vindo(a) ao curso aprofundado de Python! Selecione um módulo no menu lateral para começar ou continuar sua jornada.")
 
-# --- Quizes ---
-def quiz_basico():
-    st.subheader("Quiz: Módulo Básico")
-    st.write("Teste seus conhecimentos do Módulo Básico!")
+    st.sidebar.title("📚 Módulos do Curso")
+    modulo_selecionado = st.sidebar.radio(
+        "Navegue pelos tópicos:",
+        ("Introdução", "Módulo Básico", "Módulo Intermediário", "Módulo Avançado"),
+        key="main_navigation"
+    )
 
-    perguntas = [
-        {
-            "pergunta": "Qual operador é usado para potenciação em Python?",
-            "opcoes": ["*", "**", "/", "%"],
-            "resposta": "**"
-        },
-        {
-            "pergunta": "Qual estrutura de controle usamos para decidir entre diferentes blocos de código?",
-            "opcoes": ["for", "while", "if/elif/else", "def"],
-            "resposta": "if/elif/else"
-        },
-        {
-            "pergunta": "Qual função é usada para obter entrada de texto do usuário?",
-            "opcoes": ["print()", "input()", "len()", "str()"],
-            "resposta": "input()"
-        }
-    ]
+    if modulo_selecionado == "Introdução":
+        st.write("Use o menu ao lado para explorar os diferentes módulos do curso. Cada módulo contém explicações, exemplos de código e exercícios interativos para praticar seus conhecimentos.")
+        st.image("https://www.python.org/static/community_logos/python-powered-h-140x182.png", width=200) # Exemplo de imagem
+        st.write("Desenvolvido com ❤️ e Streamlit.")
+    elif modulo_selecionado == "Módulo Básico":
+        modulo_basico()
+    elif modulo_selecionado == "Módulo Intermediário":
+        modulo_intermediario()
+    elif modulo_selecionado == "Módulo Avançado":
+        modulo_avancado()
 
-    respostas_corretas = 0
-    for i, p in enumerate(perguntas):
-        st.markdown(f"**{i+1}. {p['pergunta']}**")
-        resposta_usuario = st.radio(
-            "Selecione sua resposta:",
-            p["opcoes"],
-            key=f"q_basico_{i}"
-        )
-        if st.button("Verificar Resposta", key=f"btn_basico_{i}"):
-            if resposta_usuario == p["resposta"]:
-                st.success("Correto!")
-                respostas_corretas += 1
-            else:
-                st.error(f"Incorreto. A resposta correta é: **{p['resposta']}**")
-        st.write("---")
-
-    if st.button("Finalizar Quiz Básico", key="finalizar_basico"):
-        st.info(f"Você acertou {respostas_corretas} de {len(perguntas)} perguntas.")
-
-def quiz_avancado():
-    st.subheader("Quiz: Módulo Avançado")
-    st.write("Teste seus conhecimentos do Módulo Avançado!")
-
-    perguntas_avancadas = [
-        {
-            "pergunta": "Qual palavra-chave é usada para definir uma classe em Python?",
-            "opcoes": ["function", "class", "def", "object"],
-            "resposta": "class"
-        },
-        {
-            "pergunta": "Em POO, o que `__init__` representa?",
-            "opcoes": ["Um método normal", "Um construtor", "Um destrutor", "Uma variável de classe"],
-            "resposta": "Um construtor"
-        },
-        {
-            "pergunta": "Qual a principal diferença entre um gerador e uma função normal?",
-            "opcoes": ["Geradores usam 'return'", "Geradores usam 'yield'", "Funções são mais lentas", "Geradores não podem receber argumentos"],
-            "resposta": "Geradores usam 'yield'"
-        }
-    ]
-
-    respostas_corretas_avancado = 0
-    for i, p in enumerate(perguntas_avancadas):
-        st.markdown(f"**{i+1}. {p['pergunta']}**")
-        resposta_usuario = st.radio(
-            "Selecione sua resposta:",
-            p["opcoes"],
-            key=f"q_avancado_{i}"
-        )
-        if st.button("Verificar Resposta", key=f"btn_avancado_{i}"):
-            if resposta_usuario == p["resposta"]:
-                st.success("Correto!")
-                respostas_corretas_avancado += 1
-            else:
-                st.error(f"Incorreto. A resposta correta é: **{p['resposta']}**")
-        st.write("---")
-
-    if st.button("Finalizar Quiz Avançado", key="finalizar_avancado"):
-        st.info(f"Você acertou {respostas_corretas_avancado} de {len(perguntas_avancadas)} perguntas.")
-
-# --- Configuração da página do Streamlit ---
-st.set_page_config(layout="wide", page_title="Curso de Python Interativo")
-
-st.title("Curso Interativo de Python com Streamlit")
-st.write("Bem-vindo ao seu guia completo para aprender Python, do básico ao avançado!")
-
-# Barra lateral para navegação
-st.sidebar.title("Navegação")
-modulo_selecionado = st.sidebar.radio(
-    "Escolha um módulo:",
-    ("Introdução", "Básico", "Intermediário", "Avançado", "Quiz Básico", "Quiz Avançado")
-)
-
-if modulo_selecionado == "Introdução":
-    st.header("Comece sua jornada em Python!")
-    st.write("""
-    Este aplicativo interativo foi criado para te ajudar a aprender Python de forma prática e didática.
-    Utilize a barra lateral para navegar entre os módulos. Cada módulo contém explicações e exemplos de código que você pode copiar e testar.
-
-    **O que é Python?**
-    Python é uma linguagem de programação de alto nível, interpretada, de script, imperativa, orientada a objetos, funcional, de tipagem dinâmica e forte. É amplamente utilizada em desenvolvimento web, análise de dados, inteligência artificial, automação e muito mais.
-
-    **Por que aprender Python?**
-    * **Simples e legível**: Sintaxe clara e concisa.
-    * **Versátil**: Usado em diversas áreas.
-    * **Comunidade Ativa**: Grande suporte e muitos recursos disponíveis.
-    * **Bibliotecas e Frameworks**: Enorme ecossistema para diversas finalidades.
-    """)
-    st.image("https://www.python.org/static/community_logos/python-logo-only.png", width=200)
-
-elif modulo_selecionado == "Básico":
-    modulo_basico()
-elif modulo_selecionado == "Intermediário":
-    modulo_intermediario()
-elif modulo_selecionado == "Avançado":
-    modulo_avancado()
-elif modulo_selecionado == "Quiz Básico":
-    quiz_basico()
-elif modulo_selecionado == "Quiz Avançado":
-    quiz_avancado()
-
-st.sidebar.markdown("---")
-st.sidebar.info("Este é um projeto em desenvolvimento. Novas funcionalidades e conteúdos serão adicionados!")
+    # Mensagem de depuração no terminal (visível apenas onde você rodou 'streamlit run')
+    print(f"Módulo '{modulo_selecionado}' selecionado e carregado.")
