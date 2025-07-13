@@ -634,238 +634,223 @@ if st.session_state.current_page == "editor_dados":
 
 
                     elif grafico_tipo == "Barras Agrupadas":
-                        if col_valores_numericos_multi:
+                        if col_valores_numericos_multi: # Garante que há colunas selecionadas para derreter
                             df_long = df_para_visualizacao_final.melt(
                                 id_vars=[col_categoria_grafico],
                                 value_vars=col_valores_numericos_multi,
                                 var_name="Métrica",
-                                value_name="Valor"
+                                value_name="Valor" # Esta é a coluna 'Valor' que o Altair procura
                             )
                             df_agrupado_barras = df_long.groupby([col_categoria_grafico, "Métrica"])["Valor"].sum().reset_index()
 
                             selection_visual_bar = alt.selection_point(fields=[col_categoria_grafico], on="click", empty="none")
 
                             chart_barras = alt.Chart(df_agrupado_barras).mark_bar().encode(
-                                x=alt.X("Categoria:N", axis=alt.Axis(title="Categoria")),
-                                y=alt.Y("Valor:Q", axis=alt.Axis(title="Valor")),
-                                color=alt.Color("Métrica:N", title="Métrica"),
-                                column=alt.Column("Tipo:N", header=alt.Header(titleOrient="bottom", labelOrient="bottom")),
-                                tooltip=[col_categoria_grafico, "Métrica", alt.Tooltip("Valor", format=".2f")],
-                                opacity=alt.condition(selection_visual_bar, alt.value(1), alt.value(0.2))
+                                x=alt.X(col_categoria_grafico, axis=alt.Axis(labels=True), title=""),
+                                y=alt.Y("Valor", type="quantitative", title="Valor Total"),
+                                color="Métrica",
+                                column=alt.Column("Métrica", header=alt.Header(titleOrient="bottom", labelOrient="bottom")),
+                                tooltip=[col_categoria_grafico, "Métrica", alt.Tooltip("Valor", format=".2f", title="Valor")]
+                            ).properties(
+                                title=f"Gráfico de Barras Agrupadas por {col_categoria_grafico}"
                             ).add_params(
                                 selection_visual_bar
-                            ).properties(
-                                title=f"Gráfico de Barras Agrupadas por {col_categoria_grafico} e Métrica"
-                            )
+                            ).interactive()
                             st.altair_chart(chart_barras, use_container_width=True)
                         else:
                             st.info("Selecione pelo menos uma coluna numérica para o Gráfico de Barras Agrupadas.")
                 else:
                     st.info("Selecione uma coluna categórica para o Gráfico de Pizza ou Barras Agrupadas.")
             else:
-                st.info("Nenhuma coluna categórica disponível para o Gráfico de Pizza ou Barras Agrupadas.")
-
+                st.info("Nenhuma coluna categórica disponível para Gráficos de Pizza ou Barras Agrupadas.")
     else:
         st.info("DataFrame vazio. Sem gráficos para exibir.")
 
-elif st.session_state.current_page == "gestao_financas":
-    st.subheader("💰 Adicionar Nova Transação")
-    # --- Formulário de Adição de Transação ---
-    with st.form("form_financas"):
-        tipo_transacao = st.radio("Tipo", ["Gasto", "Ganho"], key="tipo_transacao")
-        valor_transacao = st.number_input("Valor", min_value=0.01, format="%.2f", key="valor_transacao")
-        categoria_transacao = st.text_input("Categoria (ex: Alimentação, Salário, Lazer)", key="categoria_transacao")
-        data_transacao = st.date_input("Data da Movimentação", value=date.today(), key="data_transacao")
+    ### 💾 Salvar Planilha
 
-        submit_button = st.form_submit_button("Adicionar Transação")
-
-        if submit_button:
-            if valor_transacao and categoria_transacao:
-                salvar_estado() # Salva o estado ANTES de adicionar a nova transação
-                nova_transacao = pd.DataFrame([{
-                    "Data": data_transacao,
-                    "Tipo": tipo_transacao,
-                    "Categoria": categoria_transacao,
-                    "Valor": valor_transacao
-                }])
-                st.session_state.df_financas = pd.concat([st.session_state.df_financas, nova_transacao], ignore_index=True)
-                st.success("Transação adicionada com sucesso!")
-                st.rerun()
-            else:
-                st.warning("Por favor, preencha o valor e a categoria da transação.")
-    # --- Fim do Formulário ---
-
-    st.markdown("---")
-
-    # --- Uploader de Planilha Excel para Gestão Financeira ---
-    st.subheader("⬆️ Importar Transações de Planilha Excel (.xlsx)")
-    uploaded_finances_file = st.file_uploader(
-        "Envie um arquivo Excel com suas transações financeiras.",
-        type=["xlsx"],
-        key="finances_excel_uploader"
+    # Para CSV
+    csv_file = st.session_state.df_editado.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Download como CSV",
+        data=csv_file,
+        file_name='planilha_modificada.csv',
+        mime='text/csv',
+        help="Baixar a planilha atual como um arquivo CSV."
     )
 
-    if uploaded_finances_file is not None:
-        try:
-            df_importado_financas = pd.read_excel(uploaded_finances_file)
-            
-            # Padronizar nomes das colunas para facilitar o merge
-            df_importado_financas.columns = df_importado_financas.columns.str.strip().str.capitalize()
-            
-            # Mapeamento para garantir as colunas esperadas
-            required_cols = ["Data", "Tipo", "Categoria", "Valor"]
-            
-            # Verificar se as colunas essenciais existem ou podem ser inferidas
-            if not all(col in df_importado_financas.columns for col in required_cols):
-                st.warning("As colunas esperadas ('Data', 'Tipo', 'Categoria', 'Valor') não foram encontradas. Por favor, revise sua planilha ou mapeie as colunas abaixo.")
-                
-                col_mapping = {}
-                for r_col in required_cols:
-                    col_mapping[r_col] = st.selectbox(f"Mapear '{r_col}' para qual coluna do seu arquivo?", ["(Não mapeado)"] + df_importado_financas.columns.tolist(), key=f"map_col_{r_col}")
+    # Para Excel
+    # É necessário instalar 'openpyxl' para salvar em .xlsx: pip install openpyxl
+    excel_buffer = BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+        st.session_state.df_editado.to_excel(writer, index=False, sheet_name='Planilha')
+    excel_buffer.seek(0) # Volta para o início do buffer
 
-                if st.button("Aplicar Mapeamento e Importar"):
-                    # Aplicar o mapeamento e renomear as colunas
-                    df_to_merge = df_importado_financas.rename(columns={v: k for k, v in col_mapping.items() if v != "(Não mapeado)"})
-                    
-                    # Filtrar apenas as colunas mapeadas e verificar se as essenciais estão presentes
-                    final_cols = [col for col in required_cols if col in df_to_merge.columns]
-                    if len(final_cols) == 4:
-                        df_to_merge = df_to_merge[final_cols].copy()
-                        # Realizar conversões de tipo
-                        df_to_merge["Data"] = pd.to_datetime(df_to_merge["Data"], errors='coerce').dt.date
-                        df_to_merge["Tipo"] = df_to_merge["Tipo"].astype(str)
-                        df_to_merge["Categoria"] = df_to_merge["Categoria"].astype(str)
-                        df_to_merge["Valor"] = pd.to_numeric(df_to_merge["Valor"], errors='coerce')
-                        df_to_merge.dropna(subset=["Data", "Tipo", "Categoria", "Valor"], inplace=True) # Remove linhas com dados faltantes após conversão
+    st.download_button(
+        label="Download como XLSX",
+        data=excel_buffer,
+        file_name='planilha_modificada.xlsx',
+        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        help="Baixar a planilha atual como um arquivo Excel (.xlsx)."
+    )
 
-                        if not df_to_merge.empty:
-                            salvar_estado() # Salva o estado ANTES da importação
-                            st.session_state.df_financas = pd.concat([st.session_state.df_financas, df_to_merge], ignore_index=True)
-                            st.success(f"Dados do arquivo '{uploaded_finances_file.name}' importados e combinados com sucesso!")
-                            st.rerun()
-                        else:
-                            st.warning("Nenhum dado válido encontrado para importação após o mapeamento.")
-                    else:
-                        st.error("Por favor, mapeie todas as colunas essenciais: Data, Tipo, Categoria, Valor.")
+elif st.session_state.current_page == "gestao_financas":
+    st.header("💰 Gestão Financeira Pessoal")
 
-            else: # Se as colunas já estão corretas
-                df_to_merge = df_importado_financas[required_cols].copy()
-                # Realizar conversões de tipo
-                df_to_merge["Data"] = pd.to_datetime(df_to_merge["Data"], errors='coerce').dt.date
-                df_to_merge["Tipo"] = df_to_merge["Tipo"].astype(str)
-                df_to_merge["Categoria"] = df_to_merge["Categoria"].astype(str)
-                df_to_merge["Valor"] = pd.to_numeric(df_to_merge["Valor"], errors='coerce')
-                df_to_merge.dropna(subset=["Data", "Tipo", "Categoria", "Valor"], inplace=True)
+    # --- 1. Adicionar Nova Transação ---
+    st.subheader("Adicionar Nova Transação")
+    with st.form("form_transacao", clear_on_submit=True):
+        data = st.date_input("Data", value=date.today(), key="fin_data")
+        tipo = st.selectbox("Tipo", ["Receita", "Despesa"], key="fin_tipo")
+        
+        # Categorias dinâmicas
+        categorias_despesa = ["Alimentação", "Transporte", "Moradia", "Lazer", "Educação", "Saúde", "Outros"]
+        categorias_receita = ["Salário", "Freelance", "Investimento", "Presente", "Outros"]
 
-                if not df_to_merge.empty:
-                    salvar_estado() # Salva o estado ANTES da importação
-                    st.session_state.df_financas = pd.concat([st.session_state.df_financas, df_to_merge], ignore_index=True)
-                    st.success(f"Dados do arquivo '{uploaded_finances_file.name}' importados e combinados com sucesso!")
-                    st.rerun()
-                else:
-                    st.warning("Nenhum dado válido encontrado para importação no arquivo.")
-
-        except Exception as e:
-            st.error(f"Erro ao processar o arquivo Excel: {e}. Verifique o formato e o conteúdo do arquivo. Certifique-se de que as colunas 'Data', 'Tipo', 'Categoria' e 'Valor' estão presentes e com dados válidos.")
-
-    st.markdown("---")
-
-    # --- Novos Botões de Controle ---
-    st.subheader("Controle de Dados Financeiros")
-    col1_btns, col2_btns, col3_btns = st.columns(3)
-
-    with col1_btns:
-        if st.button("🗑️ Limpar Todas as Transações", key="clear_all_finances"):
-            if st.session_state.df_financas.empty:
-                st.info("Não há transações para limpar.")
-            else:
-                salvar_estado() # Salva o estado ANTES de limpar
-                st.session_state.df_financas = pd.DataFrame(columns=["Data", "Tipo", "Categoria", "Valor"])
-                st.success("Todas as transações financeiras foram limpas!")
-                st.rerun()
-    with col2_btns:
-        if st.button("↩️ Desfazer Última Ação Financeira", key="undo_finances"):
-            restaurar_ultimo_estado_financas()
-    with col3_btns:
-        # Função para salvar o DataFrame de finanças em Excel
-        def to_excel(df):
-            output = BytesIO()
-            writer = pd.ExcelWriter(output, engine='xlsxwriter')
-            df.to_excel(writer, index=False, sheet_name='TransacoesFinanceiras')
-            writer.close()
-            processed_data = output.getvalue()
-            return processed_data
-
-        excel_data = to_excel(st.session_state.df_financas)
-        st.download_button(
-            label="💾 Salvar Transações Atuais (.xlsx)",
-            data=excel_data,
-            file_name="transacoes_financeiras.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            key="save_finances_excel"
-        )
-    
-    st.markdown("---")
-
-
-    st.subheader("📊 Resumo Financeiro Detalhado")
-    if not st.session_state.df_financas.empty:
-        # data_editor para permitir edição direta da tabela de finanças
-        df_financas_editado = st.data_editor(
-            st.session_state.df_financas.sort_values(by="Data", ascending=False),
-            num_rows="dynamic",
-            use_container_width=True,
-            key="finances_data_editor"
-        )
-        # Se houver mudanças na tabela editada, atualiza o estado
-        if not df_financas_editado.equals(st.session_state.df_financas):
-            salvar_estado() # Salva o estado ANTES de aplicar a edição
-            st.session_state.df_financas = df_financas_editado
-            st.success("Tabela de transações atualizada!")
-            st.rerun()
-
-        total_ganhos = st.session_state.df_financas[st.session_state.df_financas["Tipo"] == "Ganho"]["Valor"].sum()
-        total_gastos = st.session_state.df_financas[st.session_state.df_financas["Tipo"] == "Gasto"]["Valor"].sum()
-        saldo = total_ganhos - total_gastos
-
-        st.markdown(f"**Total de Ganhos:** R$ {total_ganhos:,.2f}")
-        st.markdown(f"**Total de Gastos:** R$ {total_gastos:,.2f}")
-        st.markdown(f"**Saldo Atual:** R$ {saldo:,.2f}")
-
-        # Gráfico de Ganhos vs Gastos por Categoria
-        st.subheader("Ganhos e Gastos por Categoria")
-        df_grouped_financas = st.session_state.df_financas.groupby(["Categoria", "Tipo"])["Valor"].sum().reset_index()
-
-        chart_financas = alt.Chart(df_grouped_financas).mark_bar().encode(
-            x=alt.X("Categoria:N", axis=alt.Axis(title="Categoria")),
-            y=alt.Y("Valor:Q", axis=alt.Axis(title="Valor (R$)")),
-            color=alt.Color("Tipo:N", legend=alt.Legend(title="Tipo de Transação")),
-            tooltip=["Categoria", "Tipo", alt.Tooltip("Valor", format=".2f")]
-        ).properties(
-            title="Ganhos e Gastos por Categoria"
-        ).interactive()
-        st.altair_chart(chart_financas, use_container_width=True)
-
-        # Gráfico de Linha para Saldo ao longo do tempo (se tiver coluna de data)
-        st.subheader("Saldo ao longo do Tempo")
-        if "Data" in st.session_state.df_financas.columns and not st.session_state.df_financas.empty:
-            df_saldo_tempo = st.session_state.df_financas.copy()
-            df_saldo_tempo['Impacto_Saldo'] = df_saldo_tempo.apply(
-                lambda row: row['Valor'] if row['Tipo'] == 'Ganho' else -row['Valor'], axis=1
-            )
-            df_saldo_tempo = df_saldo_tempo.sort_values(by="Data")
-            df_saldo_tempo['Saldo_Acumulado'] = df_saldo_tempo['Impacto_Saldo'].cumsum()
-
-            chart_saldo_tempo = alt.Chart(df_saldo_tempo).mark_line(point=True).encode(
-                x=alt.X("Data:T", axis=alt.Axis(title="Data")),
-                y=alt.Y("Saldo_Acumulado:Q", axis=alt.Axis(title="Saldo Acumulado (R$)")),
-                tooltip=["Data", alt.Tooltip("Saldo_Acumulado", format=".2f")]
-            ).properties(
-                title="Evolução do Saldo ao Longo do Tempo"
-            ).interactive()
-            st.altair_chart(chart_saldo_tempo, use_container_width=True)
+        if tipo == "Despesa":
+            categoria = st.selectbox("Categoria", categorias_despesa, key="fin_categoria")
         else:
-            st.info("Adicione transações com datas para ver a evolução do saldo.")
+            categoria = st.selectbox("Categoria", categorias_receita, key="fin_categoria")
+
+        valor = st.number_input("Valor (R$)", min_value=0.01, format="%.2f", key="fin_valor")
+        
+        col1_form, col2_form = st.columns(2)
+        with col1_form:
+            submit_button = st.form_submit_button("Adicionar Transação")
+        with col2_form:
+            if st.form_submit_button("Desfazer Última Transação"):
+                restaurar_ultimo_estado_financas()
+                st.experimental_rerun() # Recarregar para mostrar o estado desfeito
+
+        if submit_button:
+            salvar_estado() # Salva o estado atual antes de modificar
+            nova_transacao = pd.DataFrame([{
+                "Data": data,
+                "Tipo": tipo,
+                "Categoria": categoria,
+                "Valor": valor
+            }])
+            st.session_state.df_financas = pd.concat([st.session_state.df_financas.astype(nova_transacao.dtypes), nova_transacao], ignore_index=True) # Usar pd.concat
+            st.session_state.df_financas["Data"] = pd.to_datetime(st.session_state.df_financas["Data"]) # Garante o tipo datetime
+            st.success("Transação adicionada com sucesso!")
+            st.rerun() # Para atualizar a tabela e os gráficos
+
+    # --- 2. Visualizar e Editar Transações ---
+    st.subheader("Suas Transações")
+    if not st.session_state.df_financas.empty:
+        df_financas_editado = st.data_editor(
+            st.session_state.df_financas, 
+            num_rows="dynamic", 
+            use_container_width=True,
+            column_config={
+                "Data": st.column_config.DateColumn("Data", format="DD/MM/YYYY"),
+                "Valor": st.column_config.NumberColumn("Valor (R$)", format="R$ %.2f")
+            },
+            key="financas_data_editor"
+        )
+        if not df_financas_editado.equals(st.session_state.df_financas):
+            salvar_estado() # Salva o estado antes da modificação via data_editor
+            st.session_state.df_financas = df_financas_editado
+            st.success("Transações atualizadas!")
+            st.rerun()
+    else:
+        st.info("Nenhuma transação registrada ainda.")
+
+    # --- 3. Resumo Financeiro ---
+    st.subheader("Resumo Financeiro")
+    if not st.session_state.df_financas.empty:
+        total_receitas = st.session_state.df_financas[st.session_state.df_financas["Tipo"] == "Receita"]["Valor"].sum()
+        total_despesas = st.session_state.df_financas[st.session_state.df_financas["Tipo"] == "Despesa"]["Valor"].sum()
+        saldo_atual = total_receitas - total_despesas
+
+        col_receitas, col_despesas, col_saldo = st.columns(3)
+        with col_receitas:
+            st.metric(label="Total de Receitas", value=f"R$ {total_receitas:,.2f}")
+        with col_despesas:
+            st.metric(label="Total de Despesas", value=f"R$ {total_despesas:,.2f}")
+        with col_saldo:
+            st.metric(label="Saldo Atual", value=f"R$ {saldo_atual:,.2f}")
+        
+        st.markdown("---")
+        st.subheader("Análise por Categoria")
+        despesas_por_categoria = st.session_state.df_financas[st.session_state.df_financas["Tipo"] == "Despesa"].groupby("Categoria")["Valor"].sum().reset_index()
+        if not despesas_por_categoria.empty:
+            chart_despesas = alt.Chart(despesas_por_categoria).mark_bar().encode(
+                x=alt.X("Valor", type="quantitative", title="Total de Despesas (R$)"),
+                y=alt.Y("Categoria", type="nominal", sort="-x", title="Categoria"),
+                tooltip=["Categoria", alt.Tooltip("Valor", format=".2f", title="Total")]
+            ).properties(
+                title="Despesas por Categoria"
+            ).interactive()
+            st.altair_chart(chart_despesas, use_container_width=True)
+        else:
+            st.info("Nenhuma despesa registrada para análise por categoria.")
+
+        st.markdown("---")
+        st.subheader("Evolução Financeira ao Longo do Tempo")
+        # Agrupar por data (dia) para o gráfico de linha
+        df_financas_daily = st.session_state.df_financas.copy()
+        df_financas_daily['Data'] = df_financas_daily['Data'].dt.date # Agrupar por data
+        df_financas_daily['Receita'] = df_financas_daily.apply(lambda row: row['Valor'] if row['Tipo'] == 'Receita' else 0, axis=1)
+        df_financas_daily['Despesa'] = df_financas_daily.apply(lambda row: row['Valor'] if row['Tipo'] == 'Despesa' else 0, axis=1)
+
+        # Usar pivot_table para lidar com múltiplas entradas no mesmo dia
+        df_financas_trend = pd.pivot_table(
+            df_financas_daily, 
+            values=['Receita', 'Despesa'], 
+            index='Data', 
+            aggfunc='sum'
+        ).reset_index()
+
+        df_financas_trend = df_financas_trend.sort_values('Data')
+
+        # Calcular saldo acumulado
+        df_financas_trend['Saldo Acumulado'] = (df_financas_trend['Receita'] - df_financas_trend['Despesa']).cumsum()
+
+        if not df_financas_trend.empty:
+            chart_saldo = alt.Chart(df_financas_trend).transform_fold(
+                ['Receita', 'Despesa', 'Saldo Acumulado'],
+                as_=['Tipo', 'Valor']
+            ).mark_line(point=True).encode(
+                x=alt.X("Data", type="temporal", title="Data"),
+                y=alt.Y("Valor", type="quantitative", title="Valor (R$)"),
+                color=alt.Color("Tipo", title="Tipo de Transação"),
+                tooltip=["Data", "Tipo", alt.Tooltip("Valor", format=".2f", title="Valor")]
+            ).properties(
+                title="Evolução de Receitas, Despesas e Saldo Acumulado"
+            ).interactive()
+            st.altair_chart(chart_saldo, use_container_width=True)
+        else:
+            st.info("Nenhum dado de transação para mostrar a evolução financeira.")
 
     else:
-        st.info("Nenhuma transação financeira adicionada ainda. Use o formulário ou importe uma planilha para adicionar transações.")
+        st.info("Adicione transações para ver o resumo financeiro.")
+
+    ### 💾 Salvar Transações Financeiras
+
+    #Para salvar suas transações financeiras:
+
+
+    # Para CSV
+    csv_file_financas = st.session_state.df_financas.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Download Transações como CSV",
+        data=csv_file_financas,
+        file_name='transacoes_financeiras.csv',
+        mime='text/csv',
+        help="Baixar as transações financeiras atuais como um arquivo CSV."
+    )
+
+    # Para Excel
+    excel_buffer_financas = BytesIO()
+    with pd.ExcelWriter(excel_buffer_financas, engine='openpyxl') as writer:
+        st.session_state.df_financas.to_excel(writer, index=False, sheet_name='Transacoes')
+    excel_buffer_financas.seek(0) # Volta para o início do buffer
+
+    st.download_button(
+        label="Download Transações como XLSX",
+        data=excel_buffer_financas,
+        file_name='transacoes_financeiras.xlsx',
+        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        help="Baixar as transações financeiras atuais como um arquivo Excel (.xlsx)."
+    )
+
