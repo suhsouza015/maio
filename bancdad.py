@@ -1,57 +1,41 @@
+# funcoes.py
 import sqlite3
-import streamlit as st
-import pandas as pd
-import funcoes
-
-
-conexao = sqlite3.connect('clientes.db')
-
-cursor = conexao.cursor()
-
-cursor.execute(
-    '''CREATE TABLE clientes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    telefone TEXT NOT NULL
-    )'''
-)
-
-
-cursor.close()
-print("Tabela 'clientes' criada com sucesso!") 
 
 def connectaDB():
+    """Estabelece uma conexão com o banco de dados SQLite."""
     conexao = sqlite3.connect('clientes.db')
     return conexao
 
 def inserirDados(nome, email, telefone):
+    """
+    Insere novos dados de cliente no banco de dados.
+    Retorna True e uma mensagem de sucesso em caso de êxito,
+    ou False e uma mensagem de erro em caso de falha (ex: e-mail duplicado, campos vazios).
+    """
+    if not nome or not email or not telefone:
+        return False, "Todos os campos são obrigatórios."
+
     conexao = connectaDB()
     cursor = conexao.cursor()
-    cursor.execute("insert into clientes (nome, email, telefone) values (?, ?, ?)", (nome, email, telefone))
-    conexao.commit()
-    conexao.close()
+    try:
+        cursor.execute(
+            "INSERT INTO clientes (nome, email, telefone) VALUES (?, ?, ?)",
+            (nome, email, telefone)
+        )
+        conexao.commit()
+        return True, "Cliente cadastrado com sucesso!"
+    except sqlite3.IntegrityError:
+        return False, f"O e-mail '{email}' já existe. Por favor, use um e-mail único."
+    except Exception as e:
+        return False, f"Ocorreu um erro inesperado: {e}"
+    finally:
+        conexao.close()
 
 def listarDados():
+    """Busca todos os dados de clientes no banco de dados."""
     conexao = connectaDB()
     cursor = conexao.cursor()
-    cursor.execute("select * from clientes")
+    cursor.execute("SELECT * FROM clientes")
     dados = cursor.fetchall()
-    cursor.close()
+    conexao.close()
     return dados
-
-st.title('Cadastro de Clientes')
-nome = st.text_input('Nome do Cliente')
-email = st.text_input('Email do Cliente')
-telefone = st.text_input('Telefone do Cliente')
-
-if st.button('Cadastrar'):
-    funcoes.inserirDados(nome, email, telefone)
-    st.success('Cliente cadastrado com sucesso!')
-
-if st.button('Listar Clientes'):
-    dados = funcoes.listarDados()
-    tb = pd.DataFrame(dados, columns=['ID', 'Nome', 'Email', 'Telefone'])
-    st.header('Lista de Clientes')
-    st.table(tb)
-    st.success('Dados listados com sucesso!')
