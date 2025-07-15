@@ -1,7 +1,9 @@
-# Conteúdo do arquivo: funcoes.py
-# Este arquivo deve ser salvo como 'funcoes.py'
-
 import sqlite3
+import streamlit as st
+import pandas as pd
+
+# --- Funções de Banco de Dados ---
+# (Conteúdo que antes estaria em 'funcoes.py')
 
 def connectaDB():
     """
@@ -66,18 +68,6 @@ def listarDados():
     finally:
         conexao.close()
 
-
-# --- Fim do conteúdo de funcoes.py ---
-
-
-# --- Início do conteúdo do arquivo principal do Streamlit (Ex: app.py) ---
-# Este arquivo deve ser salvo como 'app.py' no mesmo diretório de 'funcoes.py'
-
-import streamlit as st
-import pandas as pd
-import sqlite3 # Importado para a função de inicialização do DB
-import funcoes # Importa todas as funções do nosso arquivo funcoes.py
-
 # --- Função de Inicialização do Banco de Dados ---
 # Esta função garante que a tabela 'clientes' exista no banco de dados.
 # Ela é chamada uma única vez quando o aplicativo Streamlit é iniciado.
@@ -123,11 +113,11 @@ with st.form(key="cadastro_form", clear_on_submit=True):
     submitted = st.form_submit_button('Cadastrar Cliente')
 
     if submitted:
-        # Chama a função de inserirDados do funcoes.py e obtém o status e a mensagem
-        success, message = funcoes.inserirDados(nome, email, telefone)
+        # Chama a função de inserirDados e obtém o status e a mensagem
+        success, message = inserirDados(nome, email, telefone) # Agora chamamos diretamente
         if success:
             st.success(message)
-            # Para limpar os campos após o sucesso, clear_on_submit=True no st.form já faz isso.
+            # clear_on_submit=True no st.form já limpa os campos após o sucesso.
         else:
             st.error(message)
 
@@ -136,7 +126,7 @@ st.markdown("---") # Linha separadora visual
 # --- Seção para Listar Clientes ---
 st.subheader('Lista de Clientes Cadastrados')
 if st.button('Mostrar Todos os Clientes', key="listar_button"):
-    dados = funcoes.listarDados()
+    dados = listarDados() # Agora chamamos diretamente
     if dados:
         # Cria um DataFrame do pandas para exibir os dados de forma tabular e interativa
         df = pd.DataFrame(dados, columns=['ID', 'Nome', 'Email', 'Telefone'])
