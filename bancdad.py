@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 
 # --- Funções de Banco de Dados ---
-# (Conteúdo que antes estaria em 'funcoes.py')
 
 def connectaDB():
     """
@@ -68,6 +67,36 @@ def listarDados():
     finally:
         conexao.close()
 
+def excluirDados(id_cliente):
+    """
+    Exclui um cliente do banco de dados pelo seu ID.
+
+    Args:
+        id_cliente (int): O ID do cliente a ser excluído.
+
+    Returns:
+        tuple: Uma tupla contendo (bool, str).
+               - True e uma mensagem de sucesso se a exclusão for bem-sucedida.
+               - False e uma mensagem de erro se a exclusão falhar.
+    """
+    if not id_cliente:
+        return False, "O ID do cliente é obrigatório para a exclusão."
+
+    conexao = connectaDB()
+    cursor = conexao.cursor()
+    try:
+        cursor.execute("DELETE FROM clientes WHERE id = ?", (id_cliente,))
+        conexao.commit()
+        if cursor.rowcount > 0: # Verifica se alguma linha foi afetada (excluída)
+            return True, f"Cliente com ID {id_cliente} excluído com sucesso!"
+        else:
+            return False, f"Cliente com ID {id_cliente} não encontrado."
+    except Exception as e:
+        return False, f"Ocorreu um erro ao excluir o cliente: {e}"
+    finally:
+        conexao.close()
+
+
 # --- Função de Inicialização do Banco de Dados ---
 # Esta função garante que a tabela 'clientes' exista no banco de dados.
 # Ela é chamada uma única vez quando o aplicativo Streamlit é iniciado.
@@ -97,40 +126,53 @@ st.set_page_config(page_title="Cadastro de Clientes", layout="centered") # Confi
 st.title('Sistema de Cadastro de Clientes')
 
 st.markdown("""
-Este aplicativo permite **cadastrar e visualizar** informações de clientes de forma simples e eficiente.
+Este aplicativo permite **cadastrar, visualizar e excluir** informações de clientes de forma simples e eficiente.
 """)
 
 # --- Seção para Cadastrar Novo Cliente ---
 st.subheader('Cadastrar Novo Cliente')
-# Usamos st.form para criar um formulário. Quando o botão 'Cadastrar Cliente' é clicado,
-# todo o conteúdo dentro do 'with st.form' é reprocessado.
 with st.form(key="cadastro_form", clear_on_submit=True):
     nome = st.text_input('Nome do Cliente', key="nome_input")
     email = st.text_input('Email do Cliente', key="email_input")
     telefone = st.text_input('Telefone do Cliente', key="telefone_input")
 
-    # Botão de submissão do formulário
     submitted = st.form_submit_button('Cadastrar Cliente')
 
     if submitted:
-        # Chama a função de inserirDados e obtém o status e a mensagem
-        success, message = inserirDados(nome, email, telefone) # Agora chamamos diretamente
+        success, message = inserirDados(nome, email, telefone)
         if success:
             st.success(message)
-            # clear_on_submit=True no st.form já limpa os campos após o sucesso.
         else:
             st.error(message)
+
+st.markdown("---") # Linha separadora visual
+
+# --- Seção para Excluir Cliente ---
+st.subheader('Excluir Cliente por ID')
+with st.form(key="excluir_form", clear_on_submit=True):
+    id_para_excluir = st.number_input('ID do Cliente para Excluir', min_value=1, step=1, key="id_excluir_input")
+    excluir_button = st.form_submit_button('Excluir Cliente')
+
+    if excluir_button:
+        # Certifica-se de que o ID não é 0 ou vazio antes de tentar excluir
+        if id_para_excluir:
+            success, message = excluirDados(int(id_para_excluir))
+            if success:
+                st.success(message)
+            else:
+                st.error(message)
+        else:
+            st.warning("Por favor, insira um ID válido para excluir.")
 
 st.markdown("---") # Linha separadora visual
 
 # --- Seção para Listar Clientes ---
 st.subheader('Lista de Clientes Cadastrados')
 if st.button('Mostrar Todos os Clientes', key="listar_button"):
-    dados = listarDados() # Agora chamamos diretamente
+    dados = listarDados()
     if dados:
-        # Cria um DataFrame do pandas para exibir os dados de forma tabular e interativa
         df = pd.DataFrame(dados, columns=['ID', 'Nome', 'Email', 'Telefone'])
-        st.dataframe(df) # st.dataframe oferece funcionalidades como ordenação e busca
+        st.dataframe(df)
     else:
         st.info("Nenhum cliente cadastrado ainda. Use a seção acima para adicionar um novo cliente.")
 
