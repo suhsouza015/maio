@@ -34,25 +34,15 @@ def inicializar_estado():
     if 'lista_jogadores' not in st.session_state:
         st.session_state.lista_jogadores = carregar_dados()
 
-def adicionar_jogador(nome, lane):
+def adicionar_jogador(nome, lane, id):
     """Adiciona um novo jogador à lista e salva."""
-    if nome and lane:
-        novo_jogador = {'nome': nome, 'lane': lane}
+    if nome and lane and id:
+        novo_jogador = {'nome': nome, 'lane': lane, 'id': id}
         st.session_state.lista_jogadores.append(novo_jogador)
         salvar_dados(st.session_state.lista_jogadores)
         st.success(f"Jogador '{nome}' adicionado com sucesso!")
     else:
         st.warning("Por favor, preencha todos os campos para adicionar um jogador.")
-
-def editar_jogador(indice, novo_nome, nova_lane):
-    """Edita um jogador existente na lista e salva."""
-    if novo_nome and nova_lane:
-        st.session_state.lista_jogadores[indice]['nome'] = novo_nome
-        st.session_state.lista_jogadores[indice]['lane'] = nova_lane
-        salvar_dados(st.session_state.lista_jogadores)
-        st.success("Jogador editado com sucesso!")
-    else:
-        st.warning("O nome e a lane não podem ser vazios.")
 
 # --- Inicialização da Aplicação ---
 inicializar_estado()
@@ -64,9 +54,10 @@ st.header("Adicionar Novo Jogador")
 with st.form("form_adicionar", clear_on_submit=True):
     novo_nome = st.text_input("Nome do jogador")
     nova_lane = st.text_input("Lane do jogador")
+    novo_id = st.text_input("ID do jogador")
     submit_button = st.form_submit_button("Adicionar")
     if submit_button:
-        adicionar_jogador(novo_nome, nova_lane)
+        adicionar_jogador(novo_nome, nova_lane, novo_id)
 
 # --- Seção para Visualizar Jogadores ---
 st.header("Lista de Jogadores")
@@ -75,19 +66,5 @@ if st.session_state.lista_jogadores:
 else:
     st.info("A lista de jogadores está vazia.")
 
-# --- Seção para Editar Jogador ---
-st.header("Editar Jogador")
-if st.session_state.lista_jogadores:
-    nomes_jogadores = [f"{i+1}. {p['nome']} ({p['lane']})" for i, p in enumerate(st.session_state.lista_jogadores)]
-    jogador_selecionado = st.selectbox("Selecione um jogador para editar", nomes_jogadores)
-    
-    indice_selecionado = nomes_jogadores.index((str(jogador_selecionado)))
-    jogador_atual = st.session_state.lista_jogadores[indice_selecionado]
-    
-    with st.form("form_editar"):
-        novo_nome_edit = st.text_input("Novo nome", value=jogador_atual['nome'])
-        nova_lane_edit = st.text_input("Nova lane", value=jogador_atual['lane'])
-        submit_edit_button = st.form_submit_button("Salvar Edição")
-        if submit_edit_button:
-            editar_jogador(indice_selecionado, novo_nome_edit, nova_lane_edit)
 
+ 
