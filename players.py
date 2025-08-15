@@ -1,3 +1,4 @@
+from altair.vegalite.v5.theme import theme
 import streamlit as st
 import json
 import os
@@ -7,6 +8,7 @@ set_page_config = st.set_page_config(
     page_icon=":video_game:",
     layout="centered",
     initial_sidebar_state="auto"
+    
 )
 
 # Define o nome do arquivo para persistência de dados.
@@ -51,7 +53,7 @@ def editar_jogador(indice, novo_nome, nova_lane):
         st.success("Jogador editado com sucesso!")
     else:
         st.warning("O nome e a lane não podem ser vazios.")
-        
+
 # --- Inicialização da Aplicação ---
 inicializar_estado()
 
@@ -89,13 +91,3 @@ if st.session_state.lista_jogadores:
         if submit_edit_button:
             editar_jogador(indice_selecionado, novo_nome_edit, nova_lane_edit)
 
-# --- Seção para Remover Jogador ---
-st.header("Remover Jogador")
-if st.session_state.lista_jogadores:
-    nomes_jogadores_remocao = [f"{i+1}. {p['nome']} ({p['lane']})" for i, p in enumerate(st.session_state.lista_jogadores)]
-    jogador_remover = st.selectbox("Selecione um jogador para remover", nomes_jogadores_remocao, key="remocao_select")
-    
-    indice_remover = nomes_jogadores_remocao.index(str(jogador_remover))
-    
-    if st.button("Remover Jogador"):
-        remover_jogador(indice_remover)
