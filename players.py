@@ -51,13 +51,7 @@ def editar_jogador(indice, novo_nome, nova_lane):
         st.success("Jogador editado com sucesso!")
     else:
         st.warning("O nome e a lane não podem ser vazios.")
-
-def remover_jogador(indice):
-    """Remove um jogador da lista e salva."""
-    nome_removido = st.session_state.lista_jogadores.pop(indice)['nome']
-    salvar_dados(st.session_state.lista_jogadores)
-    st.success(f"Jogador '{nome_removido}' removido com sucesso!")
-
+        
 # --- Inicialização da Aplicação ---
 inicializar_estado()
 
